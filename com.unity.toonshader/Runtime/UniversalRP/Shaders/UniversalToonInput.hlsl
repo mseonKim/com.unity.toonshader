@@ -185,6 +185,11 @@ half _OcclusionStrength;
 half _Surface;
 
 
+// CUSTOM
+float4 _SDF_Tex_ST;
+half4 _FaceForward;
+/// CUSTOM END
+
 CBUFFER_END
 
 //sampler2D _MainTex;
@@ -220,6 +225,10 @@ TEXTURE2D(_OcclusionMap);       SAMPLER(sampler_OcclusionMap);
 TEXTURE2D(_MetallicGlossMap);   SAMPLER(sampler_MetallicGlossMap);
 TEXTURE2D(_SpecGlossMap);       SAMPLER(sampler_SpecGlossMap);
 
+
+/// CUSTOM
+TEXTURE2D(_SDF_Tex);       SAMPLER(sampler_SDF_Tex);
+/// CUSTOM END
 
 #ifdef _SPECULAR_SETUP
 #define SAMPLE_METALLICSPECULAR(uv) SAMPLE_TEXTURE2D(_SpecGlossMap, sampler_SpecGlossMap, uv)

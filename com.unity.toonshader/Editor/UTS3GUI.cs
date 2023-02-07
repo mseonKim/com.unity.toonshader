@@ -205,6 +205,11 @@ namespace UnityEditor.Rendering.Toon
 
         internal const string ShaderDefineIS_CLIPPING_MATTE = "_IS_CLIPPING_MATTE";
 
+        
+        /// CUSTOM
+        internal const string CustomShaderPropUse_SDF = "_USE_SDF";
+        ///
+
 
         protected readonly string[] UtsModeNames = { "Standard", "With Additional Control Maps" };
         protected readonly string[] EmissiveScrollMode = { "UV Coordinate Scroll", "View Coordinate Scroll" };
@@ -316,6 +321,7 @@ namespace UnityEditor.Rendering.Toon
             SceneLight = 1 << 12,
             EnvironmentalLightEffectiveness = 1 << 13,
             MetaverseSettings = 1 << 14,
+            Custom = 1 << 15
         }
 
         // variables which must be gotten from shader at the beggning of GUI
@@ -413,6 +419,9 @@ namespace UnityEditor.Rendering.Toon
         protected MaterialProperty outlineTex = null;
         protected MaterialProperty bakedNormal = null;
 
+        // CUSTOM
+        protected MaterialProperty sdf_Tex = null;
+
         //------------------------------------------------------
         protected MaterialEditor m_MaterialEditor;
 
@@ -508,6 +517,10 @@ namespace UnityEditor.Rendering.Toon
             bakedNormal = FindProperty("_BakedNormal", props, false);
 
 
+            // CUSTOM
+            sdf_Tex = FindProperty("_SDF_Tex", props);
+
+
 
             FindTessellationProperties(props);
         }
@@ -599,6 +612,8 @@ namespace UnityEditor.Rendering.Toon
             public static readonly GUIContent metaverseSettingsFoldout = EditorGUIUtility.TrTextContent("Metaverse Settings (Experimental)", "Default directional light when no directional lights are in the scene.");
             public static readonly GUIContent shadowControlMapFoldout = EditorGUIUtility.TrTextContent("Shadow Control Maps", "Shadow control map settings. Such as positions and highlight filtering.");
             public static readonly GUIContent pointLightFoldout = EditorGUIUtility.TrTextContent("Point Light Settings", "Point light settings. Such as filtering and step offset.");
+            // CUSTOM
+            public static readonly GUIContent customFoldout = EditorGUIUtility.TrTextContent("Custom Settings", "Custom settings. Such as SDF.");
 
             public static readonly GUIContent baseColorText = new GUIContent("Base Map", "Base Color : Texture(sRGB) × Color(RGB) Default:White");
             public static readonly GUIContent firstShadeColorText = new GUIContent("1st Shading Map", "The map used for the brighter portions of the shadow.");
@@ -684,6 +699,10 @@ namespace UnityEditor.Rendering.Toon
             public static readonly GUIContent emissionAnimationText = new GUIContent("Emission Map Animation", "When Enabled, the UV and Color of the Emission Map are animated.");
             public static readonly GUIContent outlineModeText = new GUIContent("Outline Mode", "Specifies how the inverted-outline object is spawned.");
             public static readonly GUIContent limitLightIntensityText = new GUIContent("Limit Light Intensity", "Limit the brightness of the light to 1 to avoid white-out.");
+            
+            // ----------------------------------------------------- CUSTOM
+            public static readonly GUIContent sdfSamplerText = new GUIContent("SDF Texture", "SDF : Texture(RGB) Default:White");
+            
             // Range properties
             public static readonly RangeProperty metaverseRangePropText = new RangeProperty(
                 label: "Metaverse Light Intensity", 
@@ -908,6 +927,9 @@ namespace UnityEditor.Rendering.Toon
             // originally these were in simple UI
             m_MaterialScopeList.RegisterHeaderScope(Styles.lightEffectivenessFoldout, Expandable.SceneLight, GUI_LightColorEffectiveness, (uint)UTS_Mode.ThreeColorToon, (uint)UTS_TransparentMode.Off, isTessellation: 0);
             m_MaterialScopeList.RegisterHeaderScope(Styles.metaverseSettingsFoldout, Expandable.MetaverseSettings, GUI_MetaverseSettings, (uint)UTS_Mode.ThreeColorToon, (uint)UTS_TransparentMode.Off, isTessellation: 0);
+
+            /// CUSTOM
+            m_MaterialScopeList.RegisterHeaderScope(Styles.customFoldout, Expandable.Custom, GUI_CustomSettings, (uint)UTS_Mode.ThreeColorToon, (uint)UTS_TransparentMode.Off, isTessellation: 0);
         }
 
         void UTS3DrawHeaders(MaterialEditor materialEditor, Material material)
@@ -2349,6 +2371,38 @@ namespace UnityEditor.Rendering.Toon
             EditorGUI.EndDisabledGroup();
 
         }
+
+        // CUSTOM
+        void GUI_CustomSettings(Material material)
+        {
+            // int isSDFEnabled = MaterialGetInt(material, CustomShaderPropUse_SDF);
+            var isSDFEnabled  = material.IsKeywordEnabled(CustomShaderPropUse_SDF);
+            var ret = EditorGUILayout.Toggle(Styles.sdfSamplerText.text, isSDFEnabled);
+            if (EditorGUI.EndChangeCheck())
+            {
+                m_MaterialEditor.RegisterPropertyChangeUndo(Styles.sdfSamplerText.text);
+                if (ret)
+                {
+                    // material.SetFloat(CustomShaderPropUse_SDF, 1);
+                    material.EnableKeyword("_USE_SDF");
+                }
+                else
+                {
+                    // material.SetFloat(CustomShaderPropUse_SDF, 0);
+                    material.DisableKeyword("_USE_SDF");
+                }
+            }
+
+            EditorGUI.BeginDisabledGroup(isSDFEnabled == false);
+            {
+                EditorGUI.indentLevel++;
+                m_MaterialEditor.TexturePropertySingleLine(Styles.sdfSamplerText, sdf_Tex);
+                m_MaterialEditor.TextureScaleOffsetProperty(sdf_Tex);
+                EditorGUI.indentLevel--;
+            }
+            EditorGUI.EndDisabledGroup();
+        }
+
 
         public void DoPopup(GUIContent label, MaterialProperty property, string[] options)
         {

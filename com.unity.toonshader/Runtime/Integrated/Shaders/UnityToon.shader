@@ -468,6 +468,14 @@ Shader "Toon" {
         [ToggleUI] _SupportDecals("Support Decals", Float) = 1.0
         [ToggleUI] _ReceivesSSR("Receives SSR", Float) = 1.0
         [ToggleUI] _AddPrecomputedVelocity("AddPrecomputedVelocity", Float) = 0.0
+
+
+
+
+        /// CUSTOM
+        _SDF_Tex("SDF_Tex", 2D) = "white" {}
+        _FaceForward("Face Forward Vector", Vector) = (0, 0, 1, 0)
+        // [Toggle(_)] _USE_SDF ("USE_SDF", Float ) = 0
 	//////////////////////////////////////////////////////////////////////////////
 	//////////////////// End of HDRP material default values. ////////////////////
 	//////////////////////////////////////////////////////////////////////////////
@@ -1241,11 +1249,16 @@ Shader "Toon" {
             #pragma shader_feature _IS_CLIPPING_OFF _IS_CLIPPING_MODE _IS_CLIPPING_TRANSMODE
 
             #pragma shader_feature _EMISSIVE_SIMPLE _EMISSIVE_ANIMATION
+
+            // CUSTOM
+            #pragma shader_feature _USE_SDF
+
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 #ifdef UNIVERSAL_PIPELINE_CORE_INCLUDED
             #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/LitForwardPass.hlsl"
+            #include "../../UniversalRP/Shaders/UniversalToonFaceSDF.hlsl"
             #include "../../UniversalRP/Shaders/UniversalToonHead.hlsl"
             #include "../../UniversalRP/Shaders/UniversalToonBody.hlsl"
 #endif

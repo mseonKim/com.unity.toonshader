@@ -158,6 +158,14 @@
                 //Composition: 3 Basic Colors as Set_FinalBaseColor
                 float3 Set_FinalBaseColor = lerp(_BaseColor_var,lerp(_Is_LightColor_1st_Shade_var,lerp( (_2nd_ShadeMap_var.rgb*_2nd_ShadeColor.rgb), ((_2nd_ShadeMap_var.rgb*_2nd_ShadeColor.rgb)*Set_LightColor), _Is_LightColor_2nd_Shade ),Set_ShadeShadowMask),Set_FinalShadowMask);
 
+                // Apply SDF
+#if _USE_SDF
+                half sdfAtten = GetFaceSDFAtten(lightDirection, _FaceForward.xyz, Set_UV0);
+                Set_FinalBaseColor = lerp(_1st_ShadeMap_var, Set_BaseColor, sdfAtten);
+#endif
+
+
+
                 float4 _Set_HighColorMask_var = tex2D(_Set_HighColorMask, TRANSFORM_TEX(Set_UV0, _Set_HighColorMask));
 
                 float _Specular_var = 0.5*dot(halfDirection,lerp( i.normalDir, normalDirection, _Is_NormalMapToHighColor ))+0.5; // Specular
