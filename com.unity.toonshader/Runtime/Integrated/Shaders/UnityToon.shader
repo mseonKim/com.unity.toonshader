@@ -474,8 +474,8 @@ Shader "Toon" {
 
         /// CUSTOM
         _SDF_Tex("SDF_Tex", 2D) = "white" {}
+        _SDF_Offset("SDF_Offset", Float) = 0
         _FaceForward("Face Forward Vector", Vector) = (0, 0, 1, 0)
-        // [Toggle(_)] _USE_SDF ("USE_SDF", Float ) = 0
 	//////////////////////////////////////////////////////////////////////////////
 	//////////////////// End of HDRP material default values. ////////////////////
 	//////////////////////////////////////////////////////////////////////////////

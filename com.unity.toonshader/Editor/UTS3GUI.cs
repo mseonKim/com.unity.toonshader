@@ -894,6 +894,11 @@ namespace UnityEditor.Rendering.Toon
             public static readonly ColorProperty outlineColorText = new ColorProperty(label: "Outline Color",
                 tooltip: "Specifies the color of outline.",
                 propName: "_Outline_Color", isHDR: false);
+
+            // CUSTOM
+            public static readonly FloatProperty faceSDFOffsetText = new FloatProperty(label: "Face SDF Offset",
+                tooltip: "",
+                propName: "_SDF_Offset", defaultValue: 0);
         }
         // --------------------------------
 
@@ -2383,12 +2388,10 @@ namespace UnityEditor.Rendering.Toon
                 m_MaterialEditor.RegisterPropertyChangeUndo(Styles.sdfSamplerText.text);
                 if (ret)
                 {
-                    // material.SetFloat(CustomShaderPropUse_SDF, 1);
                     material.EnableKeyword("_USE_SDF");
                 }
                 else
                 {
-                    // material.SetFloat(CustomShaderPropUse_SDF, 0);
                     material.DisableKeyword("_USE_SDF");
                 }
             }
@@ -2398,6 +2401,7 @@ namespace UnityEditor.Rendering.Toon
                 EditorGUI.indentLevel++;
                 m_MaterialEditor.TexturePropertySingleLine(Styles.sdfSamplerText, sdf_Tex);
                 m_MaterialEditor.TextureScaleOffsetProperty(sdf_Tex);
+                GUI_FloatProperty(material, Styles.faceSDFOffsetText);
                 EditorGUI.indentLevel--;
             }
             EditorGUI.EndDisabledGroup();

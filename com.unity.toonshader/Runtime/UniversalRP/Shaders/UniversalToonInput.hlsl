@@ -187,6 +187,7 @@ half _Surface;
 
 // CUSTOM
 float4 _SDF_Tex_ST;
+half _SDF_Offset;
 half4 _FaceForward;
 /// CUSTOM END
 

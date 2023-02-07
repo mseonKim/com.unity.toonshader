@@ -3,15 +3,18 @@
 
 // Required Uniforms:
 // 1. _SDF_Tex
-// 2. _FaceForward
+// 2. _SDF_Offset
+// 3. _FaceForward
 
 half GetFaceSDFAtten(float3 lightDir, float3 normal, float2 uv)
 {
-    half NoL = dot(lightDir.xz, normal.xz);
+    half2 l = normalize(lightDir.xz);
+    half2 n = normalize(normal.xz);
+    half NoL = dot(l, n);
 
     // Find flip x
-    half2 right = (-lightDir.z, lightDir.x);    // rotate 90 degree
-    half flip_x = ceil(dot(right, normal.xz));
+    half2 right = (-l.y, l.x);    // rotate 90 degree
+    half flip_x = ceil(dot(right, n));
     uv.x = lerp(-uv.x, uv.x, flip_x);
 
     // Blur
@@ -30,7 +33,7 @@ half GetFaceSDFAtten(float3 lightDir, float3 normal, float2 uv)
     // 1-x
     _SDF_var = 1.0 - _SDF_var;
     
-    return (0.0, 1.0, _SDF_var <= NoL);
+    return (0.0, 1.0, _SDF_var + _SDF_Offset <= NoL);
 }
 
 
