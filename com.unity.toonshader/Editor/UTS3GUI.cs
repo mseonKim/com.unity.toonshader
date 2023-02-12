@@ -208,6 +208,7 @@ namespace UnityEditor.Rendering.Toon
         
         /// CUSTOM
         internal const string CustomShaderPropUse_SDF = "_USE_SDF";
+        internal const string CustomShaderPropUse_SHADOWRAY = "_USE_SHADOWRAY";
         ///
 
 
@@ -421,6 +422,7 @@ namespace UnityEditor.Rendering.Toon
 
         // CUSTOM
         protected MaterialProperty sdf_Tex = null;
+        protected MaterialProperty sdf_ShadowMaskTex = null;
 
         //------------------------------------------------------
         protected MaterialEditor m_MaterialEditor;
@@ -519,6 +521,7 @@ namespace UnityEditor.Rendering.Toon
 
             // CUSTOM
             sdf_Tex = FindProperty("_SDF_Tex", props);
+            sdf_ShadowMaskTex = FindProperty("_SDF_ShadowMask_Tex", props);
 
 
 
@@ -702,6 +705,8 @@ namespace UnityEditor.Rendering.Toon
             
             // ----------------------------------------------------- CUSTOM
             public static readonly GUIContent sdfSamplerText = new GUIContent("SDF Texture", "SDF : Texture(RGB) Default:White");
+            public static readonly GUIContent sdfShadowMaskSamplerText = new GUIContent("SDF Shadow Mask Texture", "Texture(A) Default:White");
+            public static readonly GUIContent shadowRayText = new GUIContent("Shadow Ray", "");
             
             // Range properties
             public static readonly RangeProperty metaverseRangePropText = new RangeProperty(
@@ -899,6 +904,18 @@ namespace UnityEditor.Rendering.Toon
             public static readonly FloatProperty faceSDFOffsetText = new FloatProperty(label: "Face SDF Offset",
                 tooltip: "",
                 propName: "_SDF_Offset", defaultValue: 0);
+
+            public static readonly RangeProperty faceSDFBlurIntensityText = new RangeProperty(
+                label: "Face SDF Blur Intensity", "",
+                propName: "_SDF_BlurIntensity", defaultValue: 0.0025f, min: 0, max: 0.02f);
+
+            public static readonly RangeProperty stepShadowRayLengthText = new RangeProperty(
+                label: "Step Shadow Ray Length", "",
+                propName: "_StepShadowRayLength", defaultValue: 0.0005f, min: 0, max: 0.02f);
+
+            public static readonly RangeProperty maxShadowRayLengthText = new RangeProperty(
+                label: "Max Shadow Ray Length", "",
+                propName: "_MaxShadowRayLength", defaultValue: 0.05f, min: 0, max: 0.1f);
         }
         // --------------------------------
 
@@ -2380,8 +2397,10 @@ namespace UnityEditor.Rendering.Toon
         // CUSTOM
         void GUI_CustomSettings(Material material)
         {
-            // int isSDFEnabled = MaterialGetInt(material, CustomShaderPropUse_SDF);
             var isSDFEnabled  = material.IsKeywordEnabled(CustomShaderPropUse_SDF);
+            var isShadowRayEnabled  = material.IsKeywordEnabled(CustomShaderPropUse_SHADOWRAY);
+            
+            // Face SDF Shadow
             var ret = EditorGUILayout.Toggle(Styles.sdfSamplerText.text, isSDFEnabled);
             if (EditorGUI.EndChangeCheck())
             {
@@ -2401,7 +2420,34 @@ namespace UnityEditor.Rendering.Toon
                 EditorGUI.indentLevel++;
                 m_MaterialEditor.TexturePropertySingleLine(Styles.sdfSamplerText, sdf_Tex);
                 m_MaterialEditor.TextureScaleOffsetProperty(sdf_Tex);
+                m_MaterialEditor.TexturePropertySingleLine(Styles.sdfShadowMaskSamplerText, sdf_ShadowMaskTex);
+                m_MaterialEditor.TextureScaleOffsetProperty(sdf_ShadowMaskTex);
                 GUI_FloatProperty(material, Styles.faceSDFOffsetText);
+                GUI_RangeProperty(material, Styles.faceSDFBlurIntensityText);
+                EditorGUI.indentLevel--;
+            }
+            EditorGUI.EndDisabledGroup();
+
+            // Shadow Ray
+            ret = EditorGUILayout.Toggle(Styles.shadowRayText.text, isShadowRayEnabled);
+            if (EditorGUI.EndChangeCheck())
+            {
+                m_MaterialEditor.RegisterPropertyChangeUndo(Styles.shadowRayText.text);
+                if (ret)
+                {
+                    material.EnableKeyword("_USE_SHADOWRAY");
+                }
+                else
+                {
+                    material.DisableKeyword("_USE_SHADOWRAY");
+                }
+            }
+
+            EditorGUI.BeginDisabledGroup(isShadowRayEnabled == false);
+            {
+                EditorGUI.indentLevel++;
+                GUI_RangeProperty(material, Styles.stepShadowRayLengthText);
+                GUI_RangeProperty(material, Styles.maxShadowRayLengthText);
                 EditorGUI.indentLevel--;
             }
             EditorGUI.EndDisabledGroup();

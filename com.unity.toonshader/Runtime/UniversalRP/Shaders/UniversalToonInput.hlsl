@@ -187,8 +187,12 @@ half _Surface;
 
 // CUSTOM
 float4 _SDF_Tex_ST;
+float4 _SDF_ShadowMask_Tex_ST;
 half _SDF_Offset;
 half4 _FaceForward;
+float _SDF_BlurIntensity;
+float _StepShadowRayLength;
+float _MaxShadowRayLength;
 /// CUSTOM END
 
 CBUFFER_END
@@ -229,6 +233,7 @@ TEXTURE2D(_SpecGlossMap);       SAMPLER(sampler_SpecGlossMap);
 
 /// CUSTOM
 TEXTURE2D(_SDF_Tex);       SAMPLER(sampler_SDF_Tex);
+TEXTURE2D(_SDF_ShadowMask_Tex);       SAMPLER(sampler_SDF_ShadowMask_Tex);
 /// CUSTOM END
 
 #ifdef _SPECULAR_SETUP
