@@ -9,7 +9,16 @@ namespace UTSCustom
         public Transform headFront;
         public Transform headBack;
         public Material faceMaterial;
-        private string propertyName = "_FaceForward";
+        private string sdfPropertyName = "_FaceForward";
+
+        void OnValidate()
+        {
+            if (headFront != null && headBack != null)
+            {
+                Vector3 dir = headFront.position - headBack.position;
+                faceMaterial.SetVector(sdfPropertyName, dir.normalized);
+            }
+        }
 
         // Update is called once per frame
         void Update()
@@ -17,7 +26,7 @@ namespace UTSCustom
             if (headFront != null && headBack != null)
             {
                 Vector3 dir = headFront.position - headBack.position;
-                faceMaterial.SetVector(propertyName, dir.normalized);
+                faceMaterial.SetVector(sdfPropertyName, dir.normalized);
             }
         }
     }

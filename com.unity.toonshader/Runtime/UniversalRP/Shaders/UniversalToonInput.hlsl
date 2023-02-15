@@ -193,6 +193,10 @@ half4 _FaceForward;
 float _SDF_BlurIntensity;
 float _StepShadowRayLength;
 float _MaxShadowRayLength;
+float4 _Hair_Highlight_Tex_ST;
+float _HairHiUVOffset;
+float4 _HeadWorldPos;
+float4 _HeadUpWorldDir;
 /// CUSTOM END
 
 CBUFFER_END
@@ -234,6 +238,7 @@ TEXTURE2D(_SpecGlossMap);       SAMPLER(sampler_SpecGlossMap);
 /// CUSTOM
 TEXTURE2D(_SDF_Tex);       SAMPLER(sampler_SDF_Tex);
 TEXTURE2D(_SDF_ShadowMask_Tex);       SAMPLER(sampler_SDF_ShadowMask_Tex);
+TEXTURE2D(_Hair_Highlight_Tex);       SAMPLER(sampler_Hair_Highlight_Tex);
 /// CUSTOM END
 
 #ifdef _SPECULAR_SETUP

@@ -13,6 +13,10 @@
 // 5. _SDF_ShadowMask_Tex
 // 6. _StepShadowRayLength
 // 7. _MaxShadowRayLength
+// 8. _Hair_Highlight_Tex
+// 9. _HeadWorldPos
+// 10. _HeadUpWorldDir
+// 11. _HairHiUVOffset
 
 half GetFaceSDFAtten(float3 lightDir, float3 normal, float2 uv)
 {
@@ -89,6 +93,26 @@ half GetFakeScreenSpaceMainShadow(float3 worldPos, float3 lightDirection, float2
     return 0.0;
 }
 
+
+half3 AnisotropicHairHighlight(float3 viewDirection, float2 uv, float3 worldPos)
+{
+    float dotViewUp = saturate(dot(viewDirection, _HeadUpWorldDir));
+    float sinVU = sqrt(1 - dotViewUp * dotViewUp);
+    float2 hairUV = float2(uv.x, uv.y + sinVU * _HairHiUVOffset);
+    float hairHiTexVar = SAMPLE_TEXTURE2D(_Hair_Highlight_Tex, sampler_Hair_Highlight_Tex, TRANSFORM_TEX(hairUV, _Hair_Highlight_Tex)).a;
+    float3 hairDir = normalize(worldPos - _HeadWorldPos);
+    float dotVH = dot(viewDirection, hairDir) * 0.5 + 0.5;
+    return pow(lerp(0, hairHiTexVar.xxx, dotVH), 4);
+}
+
+// float StrandSpecular(float3 tangent, float3 viewDir, float3 lightDir, float exponent = 1.0, float strength = 1.0)
+// {
+//     float3 halfV = normalize(viewDir + lightDir);
+//     float dotTH = dot(tangent, halfV);
+//     float sinTH = sqrt(1.0 - dotTH * dotTH);
+//     float dirAtten = smoothstep(-1.0, 0.0, dotTH);
+//     return dirAtten * pow(sinTH, exponent) * strength;
+// }
 
 
 

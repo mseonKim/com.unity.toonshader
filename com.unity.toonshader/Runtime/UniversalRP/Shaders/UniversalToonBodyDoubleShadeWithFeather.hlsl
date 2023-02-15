@@ -157,12 +157,6 @@
                 float3 Set_FinalBaseColor = lerp(Set_BaseColor,finalShadeColor,Set_FinalShadowMask); // Final Color
                 // float3 Set_FinalBaseColor = lerp(Set_BaseColor,Set_1st_ShadeColor,Set_FinalShadowMask); // Final Color
 
-                // CUSTOM
-#if _USE_SHADOWRAY
-                half ssShadowAtten = GetFakeScreenSpaceMainShadow(inputData.positionWS, lightDirection, Set_UV0);
-                Set_FinalBaseColor = lerp(Set_FinalBaseColor, finalShadeColor, ssShadowAtten);
-#endif
-
                 float4 _Set_HighColorMask_var = tex2D(_Set_HighColorMask, TRANSFORM_TEX(Set_UV0, _Set_HighColorMask));
 
                 float _Specular_var = 0.5*dot(halfDirection,lerp( i.normalDir, normalDirection, _Is_NormalMapToHighColor ))+0.5; //  Specular                
@@ -247,6 +241,18 @@
                 float3 matCapColorOnMultiplyMode = Set_HighColor*(1-_Tweak_MatcapMaskLevel_var_MultiplyMode) + Set_HighColor*Set_MatCap*_Tweak_MatcapMaskLevel_var_MultiplyMode + lerp(float3(0,0,0),Set_RimLight,_RimLight);
                 float3 matCapColorFinal = lerp(matCapColorOnMultiplyMode, matCapColorOnAddMode, _Is_BlendAddToMatCap);
                 float3 finalColor = lerp(_RimLight_var, matCapColorFinal, _MatCap);// Final Composition before Emissive
+
+
+                // CUSTOM (Anisotropic Hair)
+#if _USE_ANISOTROPIC_HAIR
+                finalColor += AnisotropicHairHighlight(viewDirection, Set_UV0, inputData.positionWS);
+#endif
+                // CUSTOM (Shadow Ray)
+#if _USE_SHADOWRAY
+                half ssShadowAtten = GetFakeScreenSpaceMainShadow(inputData.positionWS, lightDirection, Set_UV0);
+                finalColor = lerp(finalColor, finalShadeColor, ssShadowAtten);
+#endif
+
                 //
                 //v.2.0.6: GI_Intensity with Intensity Multiplier Filter
 

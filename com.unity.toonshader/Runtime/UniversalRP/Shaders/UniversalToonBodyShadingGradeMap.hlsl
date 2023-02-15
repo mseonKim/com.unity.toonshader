@@ -167,11 +167,6 @@
                 half3 sdfColor = lerp(finalShadeColor, Set_BaseColor, sdfAtten);
                 Set_FinalBaseColor = min(sdfColor, receivedShadowColor);
 #endif
-#if _USE_SHADOWRAY
-                half ssShadowAtten = GetFakeScreenSpaceMainShadow(inputData.positionWS, lightDirection, Set_UV0);
-                Set_FinalBaseColor = lerp(Set_FinalBaseColor, finalShadeColor, ssShadowAtten);
-#endif
-
 
 
                 float4 _Set_HighColorMask_var = tex2D(_Set_HighColorMask, TRANSFORM_TEX(Set_UV0, _Set_HighColorMask));
@@ -319,6 +314,17 @@
                 float4 emissive_Color = lerp(colorShift_Color, viewShift_Color, _Is_ViewShift);
                 emissive = emissive_Color.rgb * _Emissive_Tex_var.rgb * emissiveMask;
 #endif
+
+                // CUSTOM (Anisotropic Hair)
+#if _USE_ANISOTROPIC_HAIR
+                finalColor += AnisotropicHairHighlight(viewDirection, Set_UV0, inputData.positionWS);
+#endif
+                // CUSTOM (Shadow Ray)
+#if _USE_SHADOWRAY
+                half ssShadowAtten = GetFakeScreenSpaceMainShadow(inputData.positionWS, lightDirection, Set_UV0);
+                finalColor = lerp(finalColor, finalShadeColor, ssShadowAtten);
+#endif
+
 //
                 //v.2.0.6: GI_Intensity with Intensity Multiplier Filter
 

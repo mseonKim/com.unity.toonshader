@@ -1,4 +1,5 @@
-﻿//#define USE_SIMPLE_UI
+﻿using System.Numerics;
+//#define USE_SIMPLE_UI
 
 
 using System;
@@ -206,9 +207,10 @@ namespace UnityEditor.Rendering.Toon
         internal const string ShaderDefineIS_CLIPPING_MATTE = "_IS_CLIPPING_MATTE";
 
         
-        /// CUSTOM
+        /// CUSTOM Keywords
         internal const string CustomShaderPropUse_SDF = "_USE_SDF";
         internal const string CustomShaderPropUse_SHADOWRAY = "_USE_SHADOWRAY";
+        internal const string CustomShaderPropUse_ANISOTROPIC_HAIR = "_USE_ANISOTROPIC_HAIR";
         ///
 
 
@@ -423,6 +425,7 @@ namespace UnityEditor.Rendering.Toon
         // CUSTOM
         protected MaterialProperty sdf_Tex = null;
         protected MaterialProperty sdf_ShadowMaskTex = null;
+        protected MaterialProperty hairHighlight_Tex = null;
 
         //------------------------------------------------------
         protected MaterialEditor m_MaterialEditor;
@@ -522,6 +525,7 @@ namespace UnityEditor.Rendering.Toon
             // CUSTOM
             sdf_Tex = FindProperty("_SDF_Tex", props);
             sdf_ShadowMaskTex = FindProperty("_SDF_ShadowMask_Tex", props);
+            hairHighlight_Tex = FindProperty("_Hair_Highlight_Tex", props);
 
 
 
@@ -707,6 +711,8 @@ namespace UnityEditor.Rendering.Toon
             public static readonly GUIContent sdfSamplerText = new GUIContent("SDF Texture", "SDF : Texture(RGB) Default:White");
             public static readonly GUIContent sdfShadowMaskSamplerText = new GUIContent("SDF Shadow Mask Texture", "Texture(A) Default:White");
             public static readonly GUIContent shadowRayText = new GUIContent("Shadow Ray", "");
+            public static readonly GUIContent anisotropicHairText = new GUIContent("Anisotropic Hair", "");
+            public static readonly GUIContent hairHighlightSamplerText = new GUIContent("Hair Hightlight Texture", "");
             
             // Range properties
             public static readonly RangeProperty metaverseRangePropText = new RangeProperty(
@@ -916,6 +922,10 @@ namespace UnityEditor.Rendering.Toon
             public static readonly RangeProperty maxShadowRayLengthText = new RangeProperty(
                 label: "Max Shadow Ray Length", "",
                 propName: "_MaxShadowRayLength", defaultValue: 0.05f, min: 0, max: 0.1f);
+
+            public static readonly RangeProperty hairHighlightUVOffset = new RangeProperty(
+                label: "Hair Highlight UV Offset", "",
+                propName: "_HairHiUVOffset", defaultValue: 0.05f, min: 0, max: 0.2f);
         }
         // --------------------------------
 
@@ -2399,6 +2409,7 @@ namespace UnityEditor.Rendering.Toon
         {
             var isSDFEnabled  = material.IsKeywordEnabled(CustomShaderPropUse_SDF);
             var isShadowRayEnabled  = material.IsKeywordEnabled(CustomShaderPropUse_SHADOWRAY);
+            var isAnisotropicHairEnabled  = material.IsKeywordEnabled(CustomShaderPropUse_ANISOTROPIC_HAIR);
             
             // Face SDF Shadow
             var ret = EditorGUILayout.Toggle(Styles.sdfSamplerText.text, isSDFEnabled);
@@ -2406,13 +2417,9 @@ namespace UnityEditor.Rendering.Toon
             {
                 m_MaterialEditor.RegisterPropertyChangeUndo(Styles.sdfSamplerText.text);
                 if (ret)
-                {
-                    material.EnableKeyword("_USE_SDF");
-                }
+                    material.EnableKeyword(CustomShaderPropUse_SDF);
                 else
-                {
-                    material.DisableKeyword("_USE_SDF");
-                }
+                    material.DisableKeyword(CustomShaderPropUse_SDF);
             }
 
             EditorGUI.BeginDisabledGroup(isSDFEnabled == false);
@@ -2434,13 +2441,9 @@ namespace UnityEditor.Rendering.Toon
             {
                 m_MaterialEditor.RegisterPropertyChangeUndo(Styles.shadowRayText.text);
                 if (ret)
-                {
-                    material.EnableKeyword("_USE_SHADOWRAY");
-                }
+                    material.EnableKeyword(CustomShaderPropUse_SHADOWRAY);
                 else
-                {
-                    material.DisableKeyword("_USE_SHADOWRAY");
-                }
+                    material.DisableKeyword(CustomShaderPropUse_SHADOWRAY);
             }
 
             EditorGUI.BeginDisabledGroup(isShadowRayEnabled == false);
@@ -2448,6 +2451,27 @@ namespace UnityEditor.Rendering.Toon
                 EditorGUI.indentLevel++;
                 GUI_RangeProperty(material, Styles.stepShadowRayLengthText);
                 GUI_RangeProperty(material, Styles.maxShadowRayLengthText);
+                EditorGUI.indentLevel--;
+            }
+            EditorGUI.EndDisabledGroup();
+
+            // Anisotropic Hair
+            ret = EditorGUILayout.Toggle(Styles.anisotropicHairText.text, isAnisotropicHairEnabled);
+            if (EditorGUI.EndChangeCheck())
+            {
+                m_MaterialEditor.RegisterPropertyChangeUndo(Styles.anisotropicHairText.text);
+                if (ret)
+                    material.EnableKeyword(CustomShaderPropUse_ANISOTROPIC_HAIR);
+                else
+                    material.DisableKeyword(CustomShaderPropUse_ANISOTROPIC_HAIR);
+            }
+
+            EditorGUI.BeginDisabledGroup(isAnisotropicHairEnabled == false);
+            {
+                EditorGUI.indentLevel++;
+                m_MaterialEditor.TexturePropertySingleLine(Styles.hairHighlightSamplerText, hairHighlight_Tex);
+                m_MaterialEditor.TextureScaleOffsetProperty(hairHighlight_Tex);
+                GUI_RangeProperty(material, Styles.hairHighlightUVOffset);
                 EditorGUI.indentLevel--;
             }
             EditorGUI.EndDisabledGroup();

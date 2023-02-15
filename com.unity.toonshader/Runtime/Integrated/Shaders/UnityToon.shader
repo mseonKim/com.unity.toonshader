@@ -482,6 +482,10 @@ Shader "Toon" {
         // Depth PrePass is necessary for shadow ray
         _StepShadowRayLength("Step Shadow Ray Length", Range(0.0, 0.02)) = 0.0005
         _MaxShadowRayLength("Max Shadow Ray Length", Range(0.0, 0.1)) = 0   // 0.05
+        _Hair_Highlight_Tex("Hair Highlight Tex", 2D) = "white" {}
+        _HairHiUVOffset("Hair Highlight UV Offset", Range(0.0, 0.2)) = 0.05
+        _HeadWorldPos("Head Position (for hair highlight)", Vector) = (0, 0, 0, 0)
+        _HeadUpWorldDir("Head Up World Vector (for hair highlight)", Vector) = (0, 0, 1, 0)
 	//////////////////////////////////////////////////////////////////////////////
 	//////////////////// End of HDRP material default values. ////////////////////
 	//////////////////////////////////////////////////////////////////////////////
@@ -1260,6 +1264,7 @@ Shader "Toon" {
             // CUSTOM
             #pragma shader_feature _USE_SDF
             #pragma shader_feature _USE_SHADOWRAY   /* Depth PrePass Required */
+            #pragma shader_feature _USE_ANISOTROPIC_HAIR
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
