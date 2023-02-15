@@ -27,7 +27,7 @@
 
 
 #if USE_FORWARD_PLUS && defined(LIGHTMAP_ON) && defined(LIGHTMAP_SHADOW_MIXING)
-#define FORWARD_PLUS_SUBTRACTIVE_LIGHT_CHECK if (_AdditionalLightsColor[loopCounter].a > 0.0h) continue;
+#define FORWARD_PLUS_SUBTRACTIVE_LIGHT_CHECK if (_AdditionalLightsColor[lightIndex].a > 0.0h) continue;
 #else
 #define FORWARD_PLUS_SUBTRACTIVE_LIGHT_CHECK
 #endif
