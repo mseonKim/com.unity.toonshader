@@ -424,7 +424,6 @@ namespace UnityEditor.Rendering.Toon
 
         // CUSTOM
         protected MaterialProperty sdf_Tex = null;
-        protected MaterialProperty sdf_ShadowMaskTex = null;
         protected MaterialProperty hairHighlight_Tex = null;
 
         //------------------------------------------------------
@@ -524,7 +523,6 @@ namespace UnityEditor.Rendering.Toon
 
             // CUSTOM
             sdf_Tex = FindProperty("_SDF_Tex", props);
-            sdf_ShadowMaskTex = FindProperty("_SDF_ShadowMask_Tex", props);
             hairHighlight_Tex = FindProperty("_Hair_Highlight_Tex", props);
 
 
@@ -708,8 +706,7 @@ namespace UnityEditor.Rendering.Toon
             public static readonly GUIContent limitLightIntensityText = new GUIContent("Limit Light Intensity", "Limit the brightness of the light to 1 to avoid white-out.");
             
             // ----------------------------------------------------- CUSTOM
-            public static readonly GUIContent sdfSamplerText = new GUIContent("SDF Texture", "SDF : Texture(RGB) Default:White");
-            public static readonly GUIContent sdfShadowMaskSamplerText = new GUIContent("SDF Shadow Mask Texture", "Texture(A) Default:White");
+            public static readonly GUIContent sdfSamplerText = new GUIContent("SDF Texture", "SDF : Texture(RGBA) - RGB:SDF & A:ShadowMask Default:White");
             public static readonly GUIContent shadowRayText = new GUIContent("Shadow Ray", "");
             public static readonly GUIContent anisotropicHairText = new GUIContent("Anisotropic Hair", "");
             public static readonly GUIContent hairHighlightSamplerText = new GUIContent("Hair Hightlight Texture", "");
@@ -2427,8 +2424,6 @@ namespace UnityEditor.Rendering.Toon
                 EditorGUI.indentLevel++;
                 m_MaterialEditor.TexturePropertySingleLine(Styles.sdfSamplerText, sdf_Tex);
                 m_MaterialEditor.TextureScaleOffsetProperty(sdf_Tex);
-                m_MaterialEditor.TexturePropertySingleLine(Styles.sdfShadowMaskSamplerText, sdf_ShadowMaskTex);
-                m_MaterialEditor.TextureScaleOffsetProperty(sdf_ShadowMaskTex);
                 GUI_FloatProperty(material, Styles.faceSDFOffsetText);
                 GUI_RangeProperty(material, Styles.faceSDFBlurIntensityText);
                 EditorGUI.indentLevel--;

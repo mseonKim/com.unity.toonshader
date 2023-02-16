@@ -474,8 +474,7 @@ Shader "Toon" {
 
         // --------------------------
         // CUSTOM
-        _SDF_Tex("SDF_Tex", 2D) = "white" {}
-        _SDF_ShadowMask_Tex("SDF_ShadowMask_Tex", 2D) = "white" {}
+        _SDF_Tex("SDF_Tex", 2D) = "white" {}    // Alpha: SDF_ShadowMask
         _SDF_Offset("SDF_Offset", Float) = 0
         _FaceForward("Face Forward Vector", Vector) = (0, 0, 1, 0)
         _SDF_BlurIntensity("SDF Blur Intensity", Range(0.0, 0.02)) = 0.0025

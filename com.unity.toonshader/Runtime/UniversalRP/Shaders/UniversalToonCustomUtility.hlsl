@@ -57,7 +57,7 @@ half GetFakeScreenSpaceMainShadow(float3 worldPos, float3 lightDirection, float2
     float3 ndcRayPos;
 
 #if _USE_SDF
-    half _SDF_ShadowMask_var = SAMPLE_TEXTURE2D(_SDF_ShadowMask_Tex, sampler_SDF_ShadowMask_Tex, TRANSFORM_TEX(uv, _SDF_ShadowMask_Tex)).a;
+    half _SDF_ShadowMask_var = SAMPLE_TEXTURE2D(_SDF_Tex, sampler_SDF_Tex, TRANSFORM_TEX(uv, _SDF_Tex)).a;
     if (_SDF_ShadowMask_var > 0.01)
     {
         return 0.0;
