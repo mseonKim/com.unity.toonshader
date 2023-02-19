@@ -417,6 +417,7 @@
                     int iLight = loopCounter + MAINLIGHT_IS_MAINLIGHT;
                     if (iLight != i.mainLightID)
 #endif
+#endif
                     {
                         float notDirectional = 1.0f; //_WorldSpaceLightPos0.w of the legacy code.
                         UtsLight additionalLight = GetUrpMainUtsLight(0,0);

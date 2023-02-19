@@ -98,7 +98,7 @@
                 outSurfaceData.occlusion = SampleOcclusion(uv);
                 outSurfaceData.emission = SampleEmission(uv, _EmissionColor.rgb, TEXTURE2D_ARGS(_EmissionMap, sampler_EmissionMap));
             }
-            half3 GlobalIlluminationUTS_Deprecated(BRDFData brdfData, half3 bakedGI, half occlusion, half3 normalWS, half3 viewDirectionWS)
+            half3 GlobalIlluminationUTS_Deprecated_Deprecated(BRDFData brdfData, half3 bakedGI, half occlusion, half3 normalWS, half3 viewDirectionWS)
             {
                 half3 reflectVector = reflect(-viewDirectionWS, normalWS);
                 half fresnelTerm = Pow4(1.0 - saturate(dot(normalWS, viewDirectionWS)));
@@ -107,6 +107,20 @@
                 half3 indirectSpecular = GlossyEnvironmentReflection(reflectVector, brdfData.perceptualRoughness, occlusion);
 
                 return EnvironmentBRDF(brdfData, indirectDiffuse, indirectSpecular, fresnelTerm);
+            }
+            half3 GlobalIlluminationUTS(BRDFData brdfData, half3 bakedGI, half occlusion, half3 normalWS, half3 viewDirectionWS, float3 positionWS, float2 normalizedScreenSpaceUV)
+            {
+                half3 reflectVector = reflect(-viewDirectionWS, normalWS);
+                half fresnelTerm = Pow4(1.0 - saturate(dot(normalWS, viewDirectionWS)));
+
+                half3 indirectDiffuse = bakedGI * occlusion;
+#if USE_FORWARD_PLUS
+                half3 irradiance = CalculateIrradianceFromReflectionProbes(reflectVector, positionWS, brdfData.perceptualRoughness, normalizedScreenSpaceUV);
+                half3 indirectSpecular = irradiance * occlusion;
+#else
+                half3 indirectSpecular = GlossyEnvironmentReflection(reflectVector, brdfData.perceptualRoughness, occlusion);
+#endif
+                return EnvironmentBRDF(brdfData, indirectDiffuse, indirectSpecular, fresnelTerm);     
             }
             half3 GlobalIlluminationUTS(BRDFData brdfData, half3 bakedGI, half occlusion, half3 normalWS, half3 viewDirectionWS, float3 positionWS, float2 normalizedScreenSpaceUV)
             {
@@ -283,8 +297,16 @@
                     light.distanceAttenuation = 1.0;
                 #endif
 #else
+#if USE_FORWARD_PLUS
+                #if defined(LIGHTMAP_ON)
+                    light.distanceAttenuation = _MainLightColor.a;
+                #else
+                    light.distanceAttenuation = 1.0;
+                #endif
+#else
                 // unity_LightData.z is 1 when not culled by the culling mask, otherwise 0.
                 light.distanceAttenuation = unity_LightData.z;
+#endif
 #endif
 #if defined(LIGHTMAP_ON) || defined(_MIXED_LIGHTING_SUBTRACTIVE)
                 // unity_ProbesOcclusion.x is the mixed light probe occlusion data
@@ -362,7 +384,11 @@
 #if USE_FORWARD_PLUS
                 int perObjectLightIndex = i;
 #else
+#if USE_FORWARD_PLUS
+                int perObjectLightIndex = i;
+#else
                 int perObjectLightIndex = GetPerObjectLightIndex(i);
+#endif
 #endif
                 return GetAdditionalPerObjectUtsLight(perObjectLightIndex, positionWS, positionCS);
             }
