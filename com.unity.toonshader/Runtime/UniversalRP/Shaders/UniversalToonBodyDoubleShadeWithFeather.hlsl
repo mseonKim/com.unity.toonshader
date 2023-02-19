@@ -333,7 +333,6 @@
                     int iLight = loopCounter + MAINLIGHT_IS_MAINLIGHT;
                     if (iLight != i.mainLightID)
 #endif
-#endif
                     {
 
 

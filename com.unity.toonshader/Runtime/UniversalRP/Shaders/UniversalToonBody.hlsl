@@ -122,20 +122,6 @@
 #endif
                 return EnvironmentBRDF(brdfData, indirectDiffuse, indirectSpecular, fresnelTerm);     
             }
-            half3 GlobalIlluminationUTS(BRDFData brdfData, half3 bakedGI, half occlusion, half3 normalWS, half3 viewDirectionWS, float3 positionWS, float2 normalizedScreenSpaceUV)
-            {
-                half3 reflectVector = reflect(-viewDirectionWS, normalWS);
-                half fresnelTerm = Pow4(1.0 - saturate(dot(normalWS, viewDirectionWS)));
-
-                half3 indirectDiffuse = bakedGI * occlusion;
-#if USE_FORWARD_PLUS
-                half3 irradiance = CalculateIrradianceFromReflectionProbes(reflectVector, positionWS, brdfData.perceptualRoughness, normalizedScreenSpaceUV);
-                half3 indirectSpecular = irradiance * occlusion;
-#else
-                half3 indirectSpecular = GlossyEnvironmentReflection(reflectVector, brdfData.perceptualRoughness, occlusion);
-#endif
-                return EnvironmentBRDF(brdfData, indirectDiffuse, indirectSpecular, fresnelTerm);     
-            }
 
             struct VertexInput {
                 float4 vertex : POSITION;
