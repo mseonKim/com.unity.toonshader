@@ -283,16 +283,8 @@
                     light.distanceAttenuation = 1.0;
                 #endif
 #else
-#if USE_FORWARD_PLUS
-                #if defined(LIGHTMAP_ON)
-                    light.distanceAttenuation = _MainLightColor.a;
-                #else
-                    light.distanceAttenuation = 1.0;
-                #endif
-#else
                 // unity_LightData.z is 1 when not culled by the culling mask, otherwise 0.
                 light.distanceAttenuation = unity_LightData.z;
-#endif
 #endif
 #if defined(LIGHTMAP_ON) || defined(_MIXED_LIGHTING_SUBTRACTIVE)
                 // unity_ProbesOcclusion.x is the mixed light probe occlusion data
@@ -370,11 +362,7 @@
 #if USE_FORWARD_PLUS
                 int perObjectLightIndex = i;
 #else
-#if USE_FORWARD_PLUS
-                int perObjectLightIndex = i;
-#else
                 int perObjectLightIndex = GetPerObjectLightIndex(i);
-#endif
 #endif
                 return GetAdditionalPerObjectUtsLight(perObjectLightIndex, positionWS, positionCS);
             }
