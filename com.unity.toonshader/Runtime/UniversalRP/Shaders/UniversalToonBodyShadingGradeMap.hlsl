@@ -36,6 +36,7 @@
                 input.vertexSH = i.vertexSH;
 # endif
                 input.uv = i.uv0;
+                input.positionCS = i.pos;
 #  if defined(_ADDITIONAL_LIGHTS_VERTEX) ||  (VERSION_LOWER(12, 0))  
 
                 input.fogFactorAndVertexLight = i.fogFactorAndVertexLight;
@@ -71,7 +72,7 @@
                     surfaceData.smoothness,
                     surfaceData.alpha, brdfData);
 
-                half3 envColor = GlobalIlluminationUTS(brdfData, inputData.bakedGI, surfaceData.occlusion, inputData.normalWS, inputData.viewDirectionWS, i.posWorld.xyz, GetNormalizedScreenSpaceUV(i.pos));
+                half3 envColor = GlobalIlluminationUTS(brdfData, inputData.bakedGI, surfaceData.occlusion, inputData.normalWS, inputData.viewDirectionWS, i.posWorld.xyz, inputData.normalizedScreenSpaceUV);
                 envColor *= 1.8f;
 
                 UtsLight mainLight = GetMainUtsLightByID(i.mainLightID, i.posWorld.xyz, inputData.shadowCoord, i.positionCS);

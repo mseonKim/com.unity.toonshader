@@ -480,7 +480,7 @@ Shader "Toon" {
         _SDF_BlurIntensity("SDF Blur Intensity", Range(0.0, 0.02)) = 0.0025
         // Depth PrePass is necessary for shadow ray
         _StepShadowRayLength("Step Shadow Ray Length", Range(0.0, 0.02)) = 0.0005
-        _MaxShadowRayLength("Max Shadow Ray Length", Range(0.0, 0.1)) = 0   // 0.05
+        _MaxShadowRayLength("Max Shadow Ray Length", Range(0.0, 0.2)) = 0   // 0.05
         _Hair_Highlight_Tex("Hair Highlight Tex", 2D) = "white" {}
         _HairHiUVOffset("Hair Highlight UV Offset", Range(0.0, 0.2)) = 0.05
         _HeadWorldPos("Head Position (for hair highlight)", Vector) = (0, 0, 0, 0)

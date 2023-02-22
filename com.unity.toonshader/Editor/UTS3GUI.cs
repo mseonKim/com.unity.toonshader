@@ -918,7 +918,7 @@ namespace UnityEditor.Rendering.Toon
 
             public static readonly RangeProperty maxShadowRayLengthText = new RangeProperty(
                 label: "Max Shadow Ray Length", "",
-                propName: "_MaxShadowRayLength", defaultValue: 0.05f, min: 0, max: 0.1f);
+                propName: "_MaxShadowRayLength", defaultValue: 0.05f, min: 0, max: 0.2f);
 
             public static readonly RangeProperty hairHighlightUVOffset = new RangeProperty(
                 label: "Hair Highlight UV Offset", "",

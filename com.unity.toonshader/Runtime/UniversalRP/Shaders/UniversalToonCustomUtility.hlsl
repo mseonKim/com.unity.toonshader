@@ -64,8 +64,8 @@ half GetFakeScreenSpaceMainShadow(float3 worldPos, float3 lightDirection, float2
     }
 #endif
 
-    UNITY_UNROLL
-    for (uint idx = 0; idx < MAX_RAY_STEPS; idx++)
+    // UNITY_UNROLL
+    [loop] for (uint idx = 0; idx < MAX_RAY_STEPS; idx++)
     {
         float len = max(0.00001, min(_StepShadowRayLength * (idx + 1), _MaxShadowRayLength));
         float3 rayStep = lightDirection * len.xxx;
@@ -82,9 +82,9 @@ half GetFakeScreenSpaceMainShadow(float3 worldPos, float3 lightDirection, float2
         // float delta = viewPosH.z / viewPosH.w - rayViewPos.z;
         delta = depth - ndcRayPos.z;
 #if UNITY_REVERSED_Z
-        if (depth > ndcRayPos.z)
+        if (depth > ndcRayPos.z && abs(delta) < 0.025)
 #else
-        if (depth < ndcRayPos.z)
+        if (depth < ndcRayPos.z && abs(delta) < 0.025)
 #endif
         {
             return 1.0;
