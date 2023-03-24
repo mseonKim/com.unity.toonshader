@@ -478,12 +478,6 @@
             }
 
 
-            // CUSTOM START
-            float LinearStep(float minValue, float maxValue, float alpha)
-            {
-                return saturate((alpha - minValue) / (maxValue - minValue));
-            }
-            // CUSTOM END
 
 
 

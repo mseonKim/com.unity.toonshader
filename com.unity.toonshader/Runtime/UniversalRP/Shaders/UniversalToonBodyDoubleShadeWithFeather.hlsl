@@ -158,6 +158,15 @@
                 float3 Set_FinalBaseColor = lerp(Set_BaseColor,finalShadeColor,Set_FinalShadowMask); // Final Color
                 // float3 Set_FinalBaseColor = lerp(Set_BaseColor,Set_1st_ShadeColor,Set_FinalShadowMask); // Final Color
 
+                // CUSTOM (Apply SDF)
+#if _USE_SDF
+                // half3 receivedShadowColor = lerp(Set_1st_ShadeColor, Set_BaseColor, LinearStep(0.5, 0.5, shadowAttenuation));
+                half sdfAtten = GetFaceSDFAtten(lightDirection, _FaceForward.xyz, Set_UV0);
+                half3 sdfColor = lerp(finalShadeColor, Set_BaseColor, sdfAtten);
+                // Set_FinalBaseColor = min(sdfColor, receivedShadowColor);
+                Set_FinalBaseColor = sdfColor;
+#endif
+
                 float4 _Set_HighColorMask_var = tex2D(_Set_HighColorMask, TRANSFORM_TEX(Set_UV0, _Set_HighColorMask));
 
                 float _Specular_var = 0.5*dot(halfDirection,lerp( i.normalDir, normalDirection, _Is_NormalMapToHighColor ))+0.5; //  Specular                
@@ -248,9 +257,10 @@
 #if _USE_ANISOTROPIC_HAIR
                 finalColor += AnisotropicHairHighlight(viewDirection, Set_UV0, inputData.positionWS);
 #endif
-                // CUSTOM (Shadow Ray)
-#if _USE_SHADOWRAY
-                half ssShadowAtten = GetFakeScreenSpaceMainShadow(inputData.positionWS, lightDirection, Set_UV0);
+                // CUSTOM (Character Shadowmap)
+#if _USE_CHAR_SHADOW
+                // half ssShadowAtten = GetFakeScreenSpaceMainShadow(inputData.positionWS, lightDirection, Set_UV0, input.normalWS);
+                half ssShadowAtten = GetCharMainShadow(inputData.positionWS, Set_UV0);
                 finalColor = lerp(finalColor, finalShadeColor, ssShadowAtten);
 #endif
 

@@ -82,7 +82,7 @@ SubShader
 #ifdef UNITY_REVERSED_Z
 				depth = (1.0 - depth);
 #endif
-                depth = 2.0 * depth - 1.0;
+                depth = 2.0 * depth - 1.0;   // Same behavior on D3D & OpenGL?
 
                 float3 viewPos = ComputeViewSpacePosition(input.texcoord.zw, depth, unity_CameraInvProjection);
                 float4 worldPos = float4(mul(unity_CameraToWorld, float4(viewPos, 1.0)).xyz, 1.0);

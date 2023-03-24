@@ -474,13 +474,11 @@ Shader "Toon" {
 
         // --------------------------
         // CUSTOM
-        _SDF_Tex("SDF_Tex", 2D) = "white" {}    // Alpha: SDF_ShadowMask
-        _SDF_Offset("SDF_Offset", Float) = 0
+        _SDF_Tex("SDF_Tex", 2D) = "white" {}    // Alpha: SDF_ShadowMask for shadow ray
+        _SDF_Offset("SDF_Offset", Float) = 0.0
         _FaceForward("Face Forward Vector", Vector) = (0, 0, 1, 0)
         _SDF_BlurIntensity("SDF Blur Intensity", Range(0.0, 0.02)) = 0.0025
-        // Depth PrePass is necessary for shadow ray
-        _StepShadowRayLength("Step Shadow Ray Length", Range(0.0, 0.02)) = 0.0005
-        _MaxShadowRayLength("Max Shadow Ray Length", Range(0.0, 0.2)) = 0   // 0.05
+        [ToggleUI] _SDF_Reverse("One Minus Texture Value", Float) = 0.0
         _Hair_Highlight_Tex("Hair Highlight Tex", 2D) = "white" {}
         _HairHiUVOffset("Hair Highlight UV Offset", Range(0.0, 0.2)) = 0.05
         _HeadWorldPos("Head Position (for hair highlight)", Vector) = (0, 0, 0, 0)
@@ -1262,7 +1260,7 @@ Shader "Toon" {
             // -----------------------
             // CUSTOM
             #pragma shader_feature _USE_SDF
-            #pragma shader_feature _USE_SHADOWRAY   /* Depth PrePass Required */
+            #pragma shader_feature _USE_CHAR_SHADOW   /* Depth PrePass Required */
             #pragma shader_feature _USE_ANISOTROPIC_HAIR
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
@@ -1365,6 +1363,32 @@ Shader "Toon" {
             #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/DepthNormalsPass.hlsl"
 
+            ENDHLSL
+        }
+
+
+        Pass
+        {
+            Name "CharacterDepth"
+            Tags{"LightMode" = "CharacterDepth"}
+
+            ZWrite On
+            ZTest LEqual
+            Cull[_CullMode]
+
+            HLSLPROGRAM
+            #pragma target 2.0
+	    
+            // Required to compile gles 2.0 with standard srp library
+            #pragma prefer_hlslcc gles
+            #pragma exclude_renderers d3d11_9x
+            #pragma shader_feature_local _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+
+            #pragma vertex CharShadowVertex
+            #pragma fragment CharShadowFragment
+
+            #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl"
+            #include "Packages/com.unity.toongraphics/CharacterShadowMap/CharacterShadowDepthPass.hlsl"
             ENDHLSL
         }
 
