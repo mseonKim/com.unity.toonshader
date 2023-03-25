@@ -190,6 +190,7 @@ float4 _SDF_Tex_ST;
 float4 _SDF_ShadowMask_Tex_ST;
 half _SDF_Offset;
 half4 _FaceForward;
+half4 _FaceUp;
 float _SDF_BlurIntensity;
 half _SDF_Reverse;
 float4 _Hair_Highlight_Tex_ST;

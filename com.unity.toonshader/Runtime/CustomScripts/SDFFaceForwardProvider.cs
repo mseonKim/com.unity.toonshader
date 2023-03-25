@@ -7,26 +7,34 @@ namespace UTSCustom
     public class SDFFaceForwardProvider : MonoBehaviour
     {
         public Transform headFront;
-        public Transform headBack;
+        public Transform headCenter;
+        public Transform headUp;
         public Material faceMaterial;
-        private string sdfPropertyName = "_FaceForward";
+        private string faceForwardVectorString = "_FaceForward";
+        private string faceUpVectorString = "_FaceUp";
 
         void OnValidate()
         {
-            if (headFront != null && headBack != null)
+            if (headFront != null && headCenter != null)
             {
-                Vector3 dir = headFront.position - headBack.position;
-                faceMaterial.SetVector(sdfPropertyName, dir.normalized);
+                Vector3 dir = headFront.position - headCenter.position;
+                faceMaterial.SetVector(faceForwardVectorString, dir.normalized);
             }
         }
 
         // Update is called once per frame
         void Update()
         {
-            if (headFront != null && headBack != null)
+            if (headFront != null && headCenter != null)
             {
-                Vector3 dir = headFront.position - headBack.position;
-                faceMaterial.SetVector(sdfPropertyName, dir.normalized);
+                Vector3 dir = headFront.position - headCenter.position;
+                faceMaterial.SetVector(faceForwardVectorString, dir.normalized);
+            }
+
+            if (headUp != null && headCenter != null)
+            {
+                Vector3 dir = headUp.position - headCenter.position;
+                faceMaterial.SetVector(faceUpVectorString, dir.normalized);
             }
         }
     }

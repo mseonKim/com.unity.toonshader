@@ -8,13 +8,14 @@
 // 1. _SDF_Tex
 // 2. _SDF_Offset
 // 3. _FaceForward
-// 4. _SDF_BlurIntensity
-// 5. _SDF_ShadowMask_Tex
-// 6. _Hair_Highlight_Tex
-// 7. _HeadWorldPos
-// 8. _HeadUpWorldDir
-// 9. _HairHiUVOffset
-// 10. _SDF_Reverse
+// 4. _FaceUp
+// 5. _SDF_BlurIntensity
+// 6. _SDF_ShadowMask_Tex
+// 7. _Hair_Highlight_Tex
+// 8. _HeadWorldPos
+// 9. _HeadUpWorldDir
+// 10. _HairHiUVOffset
+// 11. _SDF_Reverse
 
 
 half LinearStep(float m, float M, float x)
@@ -22,16 +23,23 @@ half LinearStep(float m, float M, float x)
     return saturate((x - m) / (M - m));
 }
 
-half GetFaceSDFAtten(float3 lightDir, float3 normal, float2 uv)
+half GetFaceSDFAtten(half3 lightDir, float2 uv)
 {
-    half2 l = normalize(lightDir.xz);
-    half2 n = normalize(normal.xz);
+    // Construct TBN based on face forward & up
+    // Transform lightDir to TBN space
+    half3 N = _FaceUp.xyz;
+    half3 T = _FaceForward.xyz;
+    half3 B = cross(T, N);
+    half3x3 TBN = half3x3(T, B, N);
+    half3 lightT = mul(TBN, lightDir);
+
+    half3 forwardT = mul(TBN, _FaceForward.xyz);
+    half2 l = normalize(lightT.xy);
+    half2 n = normalize(forwardT.xy);
     half NoL = dot(l, n);
 
     // Find flip x
-    half2 right = (-n.y, n.x);    // rotate 90 degree
-    half flip_x = 1.0 - step(dot(right, l), 0.001);
-    uv.x = lerp(-uv.x, uv.x, flip_x);
+    uv.x = lerp(-uv.x, uv.x, saturate(sign(lightT.y)));
 
     // Blur
     float offset = _SDF_BlurIntensity;
@@ -55,13 +63,13 @@ half GetFaceSDFAtten(float3 lightDir, float3 normal, float2 uv)
 
 half GetCharMainShadow(float3 worldPos, float2 uv)
 {
-// #if _USE_SDF
-//     half _SDF_ShadowMask_var = SAMPLE_TEXTURE2D(_SDF_Tex, sampler_SDF_Tex, TRANSFORM_TEX(uv, _SDF_Tex)).a;
-//     if (_SDF_ShadowMask_var > 0.01) // Ignore if masked
-//     {
-//         return 0.0;
-//     }
-// #endif
+#if _USE_SDF
+    half _SDF_ShadowMask_var = SAMPLE_TEXTURE2D(_SDF_Tex, sampler_SDF_Tex, TRANSFORM_TEX(uv, _SDF_Tex)).a;
+    if (_SDF_ShadowMask_var > 0.01) // Ignore if masked
+    {
+        return 0.0;
+    }
+#endif
     float4 clipPos = CharShadowWorldToHClip(worldPos);
     clipPos.z = 1.0;
     float3 ndc = clipPos.xyz / clipPos.w;

@@ -161,7 +161,7 @@
                 // CUSTOM (Apply SDF)
 #if _USE_SDF
                 // half3 receivedShadowColor = lerp(Set_1st_ShadeColor, Set_BaseColor, LinearStep(0.5, 0.5, shadowAttenuation));
-                half sdfAtten = GetFaceSDFAtten(lightDirection, _FaceForward.xyz, Set_UV0);
+                half sdfAtten = GetFaceSDFAtten(lightDirection, Set_UV0);
                 half3 sdfColor = lerp(finalShadeColor, Set_BaseColor, sdfAtten);
                 // Set_FinalBaseColor = min(sdfColor, receivedShadowColor);
                 Set_FinalBaseColor = sdfColor;
