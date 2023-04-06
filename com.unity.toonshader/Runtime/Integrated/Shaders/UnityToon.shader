@@ -1374,7 +1374,7 @@ Shader "Toon" {
 
             ZWrite On
             ZTest LEqual
-            Cull[_CullMode]
+            Cull Off
 
             HLSLPROGRAM
             #pragma target 2.0
@@ -1389,6 +1389,31 @@ Shader "Toon" {
 
             #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl"
             #include "Packages/com.unity.toongraphics/CharacterShadowMap/CharacterShadowDepthPass.hlsl"
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Name "TransparentDepth"
+            Tags{"LightMode" = "TransparentDepth"}
+
+            ZWrite Off
+            ZTest Off
+            Cull Off
+            Blend One One
+
+            HLSLPROGRAM
+            #pragma target 2.0
+	    
+            // Required to compile gles 2.0 with standard srp library
+            #pragma prefer_hlslcc gles
+            #pragma exclude_renderers d3d11_9x
+            #pragma shader_feature_local _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+
+            #pragma vertex TransparentShadowVert
+            #pragma fragment TransparentShadowFragment
+
+            #include "Packages/com.unity.toongraphics/CharacterShadowMap/TransparentShadowDepthPass.hlsl"
             ENDHLSL
         }
 

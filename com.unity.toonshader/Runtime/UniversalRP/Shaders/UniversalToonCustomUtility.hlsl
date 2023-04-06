@@ -77,7 +77,7 @@ half GetCharMainShadow(float3 worldPos, float2 uv)
 #if UNITY_UV_STARTS_AT_TOP
     ssUV.y = 1.0 - ssUV.y;
 #endif
-    return SampleCharacterShadowmapFiltered(ssUV, ndc.z);
+    return GetCharacterAndTransparentShadowmap(ssUV, ndc.z);
 }
 
 
