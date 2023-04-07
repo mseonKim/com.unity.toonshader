@@ -377,7 +377,8 @@
 
 #elif _IS_CLIPPING_TRANSMODE
 //DoubleShadeWithFeather_TransClipping
-                float Set_Opacity = SATURATE_IF_SDR((_Inverse_Clipping_var+_Tweak_transparency));
+                // CUSTOM - Multiply alpha values (Texture & BaseColor)
+                float Set_Opacity = SATURATE_IF_SDR((_MainTex_var.a * _BaseColor.a * _Inverse_Clipping_var + _Tweak_transparency));
                 fixed4 finalRGBA = fixed4(finalColor,Set_Opacity);
 
 #endif
