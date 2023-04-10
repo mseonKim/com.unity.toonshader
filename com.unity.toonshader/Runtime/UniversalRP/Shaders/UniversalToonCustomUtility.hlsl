@@ -61,7 +61,7 @@ half GetFaceSDFAtten(half3 lightDir, float2 uv)
 }
 
 
-half GetCharMainShadow(float3 worldPos, float2 uv)
+half GetCharMainShadow(float3 worldPos, float2 uv, float opacity)
 {
 #if _USE_SDF
     half _SDF_ShadowMask_var = SAMPLE_TEXTURE2D(_SDF_Tex, sampler_SDF_Tex, TRANSFORM_TEX(uv, _SDF_Tex)).a;
@@ -78,13 +78,8 @@ half GetCharMainShadow(float3 worldPos, float2 uv)
     ssUV.y = 1.0 - ssUV.y;
 #endif
 
-#if _IS_CLIPPING_TRANSMODE
-    // Ignore transparent shadow buffer
-    return SampleCharacterShadowmapFiltered(ssUV, ndc.z);
-#else
     // Max(Shadowmap, TransparentShadowmap)
-    return GetCharacterAndTransparentShadowmap(ssUV, ndc.z);
-#endif
+    return GetCharacterAndTransparentShadowmap(ssUV, ndc.z, opacity);
 }
 
 

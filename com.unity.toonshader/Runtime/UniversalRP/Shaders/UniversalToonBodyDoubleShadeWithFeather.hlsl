@@ -259,8 +259,11 @@
 #endif
                 // CUSTOM (Character Shadowmap)
 #if _USE_CHAR_SHADOW
-                // half ssShadowAtten = GetFakeScreenSpaceMainShadow(inputData.positionWS, lightDirection, Set_UV0, input.normalWS);
-                half ssShadowAtten = GetCharMainShadow(inputData.positionWS, Set_UV0);
+                float opacity = 0;
+    #if _IS_CLIPPING_TRANSMODE
+                opacity = _MainTex_var.a * _BaseColor.a * _Inverse_Clipping_var;
+    #endif
+                half ssShadowAtten = GetCharMainShadow(inputData.positionWS, Set_UV0, opacity);
                 finalColor = lerp(finalColor, finalShadeColor, ssShadowAtten);
 #endif
 
