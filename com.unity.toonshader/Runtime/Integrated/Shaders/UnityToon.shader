@@ -1260,7 +1260,7 @@ Shader "Toon" {
             // -----------------------
             // CUSTOM
             #pragma shader_feature _USE_SDF
-            #pragma shader_feature _USE_CHAR_SHADOW   /* Depth PrePass Required */
+            #pragma shader_feature _USE_CHAR_SHADOW
             #pragma shader_feature _USE_ANISOTROPIC_HAIR
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
@@ -1394,38 +1394,14 @@ Shader "Toon" {
 
         Pass
         {
-            Name "TransparentDepth"
-            Tags{"LightMode" = "TransparentDepth"}
+            Name "TransparentShadow"
+            Tags{"LightMode" = "TransparentShadow"}
 
             ZWrite Off
             ZTest Off
             Cull Off
-            Blend One One
-            BlendOp Max
-
-            HLSLPROGRAM
-            #pragma target 2.0
-	    
-            // Required to compile gles 2.0 with standard srp library
-            #pragma prefer_hlslcc gles
-            #pragma exclude_renderers d3d11_9x
-            #pragma shader_feature_local _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-
-            #pragma vertex TransparentShadowVert
-            #pragma fragment TransparentShadowFragment
-
-            #include "Packages/com.unity.toongraphics/CharacterShadowMap/TransparentShadowDepthPass.hlsl"
-            ENDHLSL
-        }
-        Pass
-        {
-            Name "TransparentAlphaSum"
-            Tags{"LightMode" = "TransparentAlphaSum"}
-
-            ZWrite Off
-            ZTest Off
-            Cull Off
-            Blend One One
+            Blend One One, One One
+            BlendOp Max, Add
 
             HLSLPROGRAM
             #pragma target 2.0
@@ -1439,7 +1415,7 @@ Shader "Toon" {
             #pragma vertex TransparentShadowVert
             #pragma fragment TransparentShadowFragment
 
-            #include "Packages/com.unity.toongraphics/CharacterShadowMap/TransparentShadowAlphaSumPass.hlsl"
+            #include "Packages/com.unity.toongraphics/CharacterShadowMap/TransparentShadowPass.hlsl"
             ENDHLSL
         }
 
