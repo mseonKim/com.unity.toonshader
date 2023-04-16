@@ -5,8 +5,7 @@
 
 
 
-
-        float4 fragDoubleShadeFeather(VertexOutput i, fixed facing : VFACE) : SV_TARGET 
+        float4 fragDoubleShadeFeather(VertexOutput i, fixed facing : VFACE, uint uSampleIdx : SV_SampleIndex) : SV_TARGET
         {
 
 
@@ -99,6 +98,12 @@
                 float _Inverse_Clipping_var = lerp( _IsBaseMapAlphaAsClippingMask_var, (1.0 - _IsBaseMapAlphaAsClippingMask_var), _Inverse_Clipping );
                 float Set_Clipping = saturate((_Inverse_Clipping_var+_Clipping_Level));
                 clip(Set_Clipping - 0.5);
+
+                // CUSTOM - OIT
+                if (ValidateOpaqueDepth(i.posWorld.xyz) == 0)
+                {
+                    clip(-1);
+                }
 
 #elif defined(_IS_CLIPPING_OFF) || defined(_IS_TRANSCLIPPING_OFF)
 //DoubleShadeWithFeather
@@ -384,6 +389,9 @@
                 float Set_Opacity = SATURATE_IF_SDR((_MainTex_var.a * _BaseColor.a * _Inverse_Clipping_var + _Tweak_transparency));
                 fixed4 finalRGBA = fixed4(finalColor,Set_Opacity);
 
+                // CUSTOM - OIT
+                createFragmentEntry(finalRGBA, i.pos.xyz, uSampleIdx);
+                clip(-1);
 #endif
                 return finalRGBA;
             }

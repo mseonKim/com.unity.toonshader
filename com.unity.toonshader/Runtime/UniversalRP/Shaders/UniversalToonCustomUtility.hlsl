@@ -104,5 +104,17 @@ half3 AnisotropicHairHighlight(float3 viewDirection, float2 uv, float3 worldPos)
 // }
 
 
+half ValidateOpaqueDepth(float3 worldPos)
+{
+    float4 clipPos = TransformWorldToHClip(worldPos);
+    float3 ndc = clipPos.xyz / clipPos.w;
+    float2 ssUV = ndc.xy * 0.5 + 0.5;
+#if UNITY_UV_STARTS_AT_TOP
+    ssUV.y = 1.0 - ssUV.y;
+#endif
+    return SampleSceneDepth(ssUV) < ndc.z;
+}
+
+
 
 #endif // UNIVERSAL_TOON_CUSTOM_UTILITY_INCLUDED

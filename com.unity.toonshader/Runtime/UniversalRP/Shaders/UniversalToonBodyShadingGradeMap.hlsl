@@ -3,8 +3,7 @@
 //toshiyuki@unity3d.com (Universal RP/HDRP) 
 
 
-
-        float4 fragShadingGradeMap(VertexOutput i, fixed facing : VFACE) : SV_TARGET
+        float4 fragShadingGradeMap(VertexOutput i, fixed facing : VFACE, uint uSampleIdx : SV_SampleIndex) : SV_TARGET
         {
 
                 i.normalDir = normalize(i.normalDir);
@@ -92,6 +91,12 @@
                 float _Inverse_Clipping_var = lerp( _IsBaseMapAlphaAsClippingMask_var, (1.0 - _IsBaseMapAlphaAsClippingMask_var), _Inverse_Clipping );
                 float Set_Clipping = saturate((_Inverse_Clipping_var+_Clipping_Level));
                 clip(Set_Clipping - 0.5);
+
+                // CUSTOM - OIT
+                if (ValidateOpaqueDepth(i.posWorld.xyz) == 0)
+                {
+                    clip(-1);
+                }
 #endif
 
 
@@ -408,6 +413,9 @@
 
                 fixed4 finalRGBA = fixed4(finalColor,Set_Opacity);
 
+                // CUSTOM - OIT
+                createFragmentEntry(finalRGBA, i.pos.xyz, uSampleIdx);
+                clip(-1);
 #endif
 
 

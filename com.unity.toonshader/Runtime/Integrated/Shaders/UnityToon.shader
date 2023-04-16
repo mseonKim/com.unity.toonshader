@@ -1203,7 +1203,8 @@ Shader "Toon" {
             }
 
             HLSLPROGRAM
-            #pragma target 2.0
+            // #pragma target 2.0
+            #pragma target 5.0
             #pragma prefer_hlslcc gles
             #pragma exclude_renderers d3d11_9x
 
@@ -1266,6 +1267,7 @@ Shader "Toon" {
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 #ifdef UNIVERSAL_PIPELINE_CORE_INCLUDED
+            #include "Packages/com.unity.toongraphics/OIT/LinkedListCreation.hlsl"  // CUSTOM - OIT
             #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/LitForwardPass.hlsl"
             #include "../../UniversalRP/Shaders/UniversalToonCustomUtility.hlsl"

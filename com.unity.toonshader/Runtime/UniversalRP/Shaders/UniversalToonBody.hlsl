@@ -492,12 +492,12 @@
 
 #endif //#if defined(_SHADINGGRADEMAP)
 
-            float4 frag(VertexOutput i, fixed facing : VFACE) : SV_TARGET
+        float4 frag(VertexOutput i, fixed facing : VFACE, uint uSampleIdx : SV_SampleIndex) : SV_TARGET
             {
 #if defined(_SHADINGGRADEMAP)
-                    return fragShadingGradeMap(i, facing);
+                    return fragShadingGradeMap(i, facing, uSampleIdx);
 #else
-                    return fragDoubleShadeFeather(i, facing);
+                    return fragDoubleShadeFeather(i, facing, uSampleIdx);
 #endif
 
             }
