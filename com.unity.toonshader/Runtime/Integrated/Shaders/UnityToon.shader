@@ -1263,6 +1263,7 @@ Shader "Toon" {
             #pragma shader_feature _USE_SDF
             #pragma shader_feature _USE_CHAR_SHADOW
             #pragma shader_feature _USE_ANISOTROPIC_HAIR
+            #pragma shader_feature _USE_OIT
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
@@ -1270,7 +1271,7 @@ Shader "Toon" {
             #include "Packages/com.unity.toongraphics/OIT/LinkedListCreation.hlsl"  // CUSTOM - OIT
             #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/LitForwardPass.hlsl"
-            #include "../../UniversalRP/Shaders/UniversalToonCustomUtility.hlsl"
+            #include "../../UniversalRP/Shaders/UniversalToonCustomUtility.hlsl"    // CUSTOM
             #include "../../UniversalRP/Shaders/UniversalToonHead.hlsl"
             #include "../../UniversalRP/Shaders/UniversalToonBody.hlsl"
 #endif

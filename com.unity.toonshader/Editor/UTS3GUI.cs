@@ -211,6 +211,7 @@ namespace UnityEditor.Rendering.Toon
         internal const string CustomShaderPropUse_SDF = "_USE_SDF";
         internal const string CustomShaderPropUse_CHAR_SHADOW = "_USE_CHAR_SHADOW";
         internal const string CustomShaderPropUse_ANISOTROPIC_HAIR = "_USE_ANISOTROPIC_HAIR";
+        internal const string CustomShaderPropUse_OIT = "_USE_OIT";
         ///
 
 
@@ -711,6 +712,7 @@ namespace UnityEditor.Rendering.Toon
             public static readonly GUIContent charShadowText = new GUIContent("Character Shadowmap", "");
             public static readonly GUIContent anisotropicHairText = new GUIContent("Anisotropic Hair", "");
             public static readonly GUIContent hairHighlightSamplerText = new GUIContent("Hair Hightlight Texture", "");
+            public static readonly GUIContent oitText = new GUIContent("OIT", "");
             
             // Range properties
             public static readonly RangeProperty metaverseRangePropText = new RangeProperty(
@@ -2400,6 +2402,7 @@ namespace UnityEditor.Rendering.Toon
             var isSDFEnabled  = material.IsKeywordEnabled(CustomShaderPropUse_SDF);
             var isCharShadowEnabled  = material.IsKeywordEnabled(CustomShaderPropUse_CHAR_SHADOW);
             var isAnisotropicHairEnabled  = material.IsKeywordEnabled(CustomShaderPropUse_ANISOTROPIC_HAIR);
+            var isOITEnabled  = material.IsKeywordEnabled(CustomShaderPropUse_OIT);
             
             // Face SDF Shadow
             var ret = EditorGUILayout.Toggle(Styles.sdfSamplerText.text, isSDFEnabled);
@@ -2455,6 +2458,17 @@ namespace UnityEditor.Rendering.Toon
                 EditorGUI.indentLevel--;
             }
             EditorGUI.EndDisabledGroup();
+
+            // OIT
+            ret = EditorGUILayout.Toggle(Styles.oitText.text, isOITEnabled);
+            if (EditorGUI.EndChangeCheck())
+            {
+                m_MaterialEditor.RegisterPropertyChangeUndo(Styles.oitText.text);
+                if (ret)
+                    material.EnableKeyword(CustomShaderPropUse_OIT);
+                else
+                    material.DisableKeyword(CustomShaderPropUse_OIT);
+            }
         }
 
 
