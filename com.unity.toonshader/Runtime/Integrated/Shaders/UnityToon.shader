@@ -1422,6 +1422,88 @@ Shader "Toon" {
             ENDHLSL
         }
 
+        Pass
+        {
+            Name "OITDepth"
+            Tags {
+                "LightMode" = "OITDepth"
+            }
+            ZWrite Off
+            ZTest LEqual
+            Cull OFF
+            ColorMask R
+            BlendOp Max
+
+            HLSLPROGRAM
+            #pragma target 2.0
+            #pragma vertex vert
+            #pragma fragment frag
+
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            struct Attributes
+            {
+                float4 position     : POSITION;
+            };
+            struct Varyings
+            {
+                float4 positionCS   : SV_POSITION;
+            };
+
+            Varyings vert(Attributes input)
+            {
+                Varyings output = (Varyings)0;
+                output.positionCS = TransformObjectToHClip(input.position.xyz);
+                // output.positionCS.z = 1.0;
+                return output;
+            }
+
+            float frag(Varyings input) : SV_TARGET
+            {
+                return input.positionCS.z;
+                // return max(0.1, input.positionCS.z);
+            }
+            ENDHLSL
+        }
+        Pass
+        {
+            Name "TransparentOutline"
+            Tags {
+                "LightMode" = "TransparentOutline"
+            }
+            Cull Front
+            ColorMask RGBA
+            Blend SrcAlpha OneMinusSrcAlpha
+            Stencil
+            {
+                Ref[_StencilNo]
+                Comp[_StencilComp]
+                Pass[_StencilOpPass]
+                Fail[_StencilOpFail]
+            }
+
+            HLSLPROGRAM
+            #pragma target 2.0
+            #pragma vertex vert
+            #pragma fragment frag
+
+
+            //V.2.0.4
+            #pragma multi_compile _IS_OUTLINE_CLIPPING_NO _IS_OUTLINE_CLIPPING_YES
+            #pragma multi_compile _OUTLINE_NML _OUTLINE_POS
+            // CUSTOM
+            #pragma shader_feature _USE_OIT
+            // Outline is implemented in UniversalToonOutline.hlsl.
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+#ifdef UNIVERSAL_PIPELINE_CORE_INCLUDED
+            #include "Packages/com.unity.toongraphics/OIT/OITOutlineUtils.hlsl"
+            #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl"
+            #include "../../UniversalRP/Shaders/UniversalToonHead.hlsl"
+            #include "../../UniversalRP/Shaders/UniversalToonOutline.hlsl"
+#endif
+            ENDHLSL
+        }
+
 //ToonCoreEnd
     }
 

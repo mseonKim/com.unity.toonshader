@@ -943,7 +943,7 @@ namespace UnityEditor.Rendering.Toon
             m_MaterialScopeList.RegisterHeaderScope(Styles.matCapFoldout, Expandable.MatCap, GUI_MatCap, (uint)UTS_Mode.ThreeColorToon, (uint)UTS_TransparentMode.Off, isTessellation: 0);
             m_MaterialScopeList.RegisterHeaderScope(Styles.angelRingFoldout, Expandable.AngelRing, GUI_AngelRing, (uint)UTS_Mode.ShadingGradeMap, (uint)UTS_TransparentMode.Off, isTessellation: 0);
             m_MaterialScopeList.RegisterHeaderScope(Styles.emissionFoldout, Expandable.Emission, GUI_Emissive, (uint)UTS_Mode.ThreeColorToon, (uint)UTS_TransparentMode.Off, isTessellation: 0);
-            m_MaterialScopeList.RegisterHeaderScope(Styles.outlineFoldout, Expandable.Outline, GUI_Outline, (uint)UTS_Mode.ThreeColorToon, (uint)UTS_TransparentMode.On, isTessellation: 0);
+            m_MaterialScopeList.RegisterHeaderScope(Styles.outlineFoldout, Expandable.Outline, GUI_Outline, (uint)UTS_Mode.ThreeColorToon, (uint)UTS_TransparentMode.Off, isTessellation: 0);
 
             m_MaterialScopeList.RegisterHeaderScope(Styles.tessellationFoldout, Expandable.TessellationLegacy, GUI_Tessellation, (uint)UTS_Mode.ThreeColorToon, (uint)UTS_TransparentMode.Off, isTessellation: 1);
             m_MaterialScopeList.RegisterHeaderScope(Styles.tessellationFoldout, Expandable.TessellationHDRP, GUI_TessellationHDRP, (uint)UTS_Mode.ThreeColorToon, (uint)UTS_TransparentMode.Off, isTessellation: 1);
@@ -1157,6 +1157,7 @@ namespace UnityEditor.Rendering.Toon
             else
             {
                 SetupOverDrawTransparentObject(material);
+                // SetupOutline_Transparent(material);
             }
             ShaderPropertiesGUI(materialEditor, material, props);
 
@@ -2190,6 +2191,15 @@ namespace UnityEditor.Rendering.Toon
                 material.SetShaderPassEnabled(srpDefaultLightModeName, true);
                 MaterialSetInt(material, srpDefaultColorMask, 0);
                 MaterialSetInt(material, srpDefaultCullMode, (int)CullingMode.Backface);
+            }
+        }
+        internal static void SetupOutline_Transparent(Material material)
+        {
+            var srpDefaultLightModeTag = material.GetTag("LightMode", false, srpDefaultLightModeName);
+            if (srpDefaultLightModeTag == srpDefaultLightModeName)
+            {
+                MaterialSetInt(material, srpDefaultColorMask, 0);
+                MaterialSetInt(material,srpDefaultCullMode, (int)CullingMode.Backface);
             }
         }
         internal static void SetupOutline(Material material)
