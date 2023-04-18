@@ -19,7 +19,7 @@
                 float3 normalDir : TEXCOORD1;
                 float3 tangentDir : TEXCOORD2;
                 float3 bitangentDir : TEXCOORD3;
-#ifdef _USE_OIT
+#ifdef _USE_OIT_OUTLINE
                 float3 worldPos : TEXCOORD4;
 #endif
 
@@ -45,7 +45,7 @@
                 float3 _BakedNormalDir = normalize(mul(_BakedNormal_var.rgb, tangentTransform));
                 //end
                 float Set_Outline_Width = (_Outline_Width*0.001*smoothstep( _Farthest_Distance, _Nearest_Distance, distance(objPos.rgb,_WorldSpaceCameraPos) )*_Outline_Sampler_var.rgb).r;
-#ifdef _USE_OIT // CUSTOM - OIT
+#ifdef _USE_OIT_OUTLINE // CUSTOM - OIT Outline
                 o.worldPos = TransformObjectToWorld(lerp(float3(v.vertex.xyz + v.normal*Set_Outline_Width), float3(v.vertex.xyz + _BakedNormalDir*Set_Outline_Width),_Is_BakedNormal));
 #else
                 Set_Outline_Width *= (1.0f - _ZOverDrawMode);
@@ -75,7 +75,7 @@
             }
             float4 frag(VertexOutput i) : SV_Target{
                 //v.2.0.5
-#ifndef _USE_OIT // CUSTOM - OIT
+#ifndef _USE_OIT_OUTLINE // CUSTOM - OIT Outline
                 if (_ZOverDrawMode > 0.99f)
                 {
                     return float4(1.0f, 1.0f, 1.0f, 1.0f);  // but nothing should be drawn except Z value as colormask is set to 0
@@ -111,8 +111,8 @@
                 clip(Set_Clipping - 0.5);
                 float4 Set_Outline_Color = lerp( float4(_Is_BlendBaseColor_var,Set_Clipping), float4((_OutlineTex_var.rgb*_Outline_Color.rgb*lightColor),Set_Clipping), _Is_OutlineTex );
 
-    #ifdef _USE_OIT // CUSTOM - OIT
-
+    #ifdef _USE_OIT // CUSTOM - OIT Outline
+        #ifdef _USE_OIT_OUTLINE
                 float4 clipPos = TransformWorldToHClip(i.worldPos.xyz);
                 // clipPos.z = 1.0f;
                 float3 ndc = clipPos.xyz / clipPos.w;
@@ -125,6 +125,7 @@
                 {
                     return 0;
                 }
+        #endif
     #endif
                 return Set_Outline_Color;
 #endif

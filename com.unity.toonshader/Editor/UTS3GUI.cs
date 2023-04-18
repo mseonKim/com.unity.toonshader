@@ -212,6 +212,7 @@ namespace UnityEditor.Rendering.Toon
         internal const string CustomShaderPropUse_CHAR_SHADOW = "_USE_CHAR_SHADOW";
         internal const string CustomShaderPropUse_ANISOTROPIC_HAIR = "_USE_ANISOTROPIC_HAIR";
         internal const string CustomShaderPropUse_OIT = "_USE_OIT";
+        internal const string CustomShaderPropUse_OIT_OUTLINE = "_USE_OIT_OUTLINE";
         ///
 
 
@@ -713,6 +714,7 @@ namespace UnityEditor.Rendering.Toon
             public static readonly GUIContent anisotropicHairText = new GUIContent("Anisotropic Hair", "");
             public static readonly GUIContent hairHighlightSamplerText = new GUIContent("Hair Hightlight Texture", "");
             public static readonly GUIContent oitText = new GUIContent("OIT", "");
+            public static readonly GUIContent oitOutlineText = new GUIContent("OIT Outline", "");
             
             // Range properties
             public static readonly RangeProperty metaverseRangePropText = new RangeProperty(
@@ -2413,6 +2415,7 @@ namespace UnityEditor.Rendering.Toon
             var isCharShadowEnabled  = material.IsKeywordEnabled(CustomShaderPropUse_CHAR_SHADOW);
             var isAnisotropicHairEnabled  = material.IsKeywordEnabled(CustomShaderPropUse_ANISOTROPIC_HAIR);
             var isOITEnabled  = material.IsKeywordEnabled(CustomShaderPropUse_OIT);
+            var isOITOutlineEnabled  = material.IsKeywordEnabled(CustomShaderPropUse_OIT_OUTLINE);
             
             // Face SDF Shadow
             var ret = EditorGUILayout.Toggle(Styles.sdfSamplerText.text, isSDFEnabled);
@@ -2479,6 +2482,19 @@ namespace UnityEditor.Rendering.Toon
                 else
                     material.DisableKeyword(CustomShaderPropUse_OIT);
             }
+            
+            // OIT Outline
+            EditorGUI.indentLevel++;
+            ret = EditorGUILayout.Toggle(Styles.oitOutlineText.text, isOITOutlineEnabled);
+            if (EditorGUI.EndChangeCheck())
+            {
+                m_MaterialEditor.RegisterPropertyChangeUndo(Styles.oitOutlineText.text);
+                if (ret)
+                    material.EnableKeyword(CustomShaderPropUse_OIT_OUTLINE);
+                else
+                    material.DisableKeyword(CustomShaderPropUse_OIT_OUTLINE);
+            }
+            EditorGUI.indentLevel--;
         }
 
 

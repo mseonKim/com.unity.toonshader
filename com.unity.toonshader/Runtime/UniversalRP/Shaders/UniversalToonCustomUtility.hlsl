@@ -71,7 +71,11 @@ half GetCharMainShadow(float3 worldPos, float2 uv, float opacity)
     }
 #endif
     float4 clipPos = CharShadowWorldToHClip(worldPos);
-    clipPos.z = 1.0;
+#if UNITY_REVERSED_Z
+    clipPos.z = min(clipPos.z, UNITY_NEAR_CLIP_VALUE);
+#else
+    clipPos.z = max(clipPos.z, UNITY_NEAR_CLIP_VALUE);
+#endif
     float3 ndc = clipPos.xyz / clipPos.w;
     float2 ssUV = ndc.xy * 0.5 + 0.5;
 #if UNITY_UV_STARTS_AT_TOP

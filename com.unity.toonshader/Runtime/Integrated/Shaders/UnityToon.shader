@@ -1390,7 +1390,6 @@ Shader "Toon" {
             #pragma vertex CharShadowVertex
             #pragma fragment CharShadowFragment
 
-            #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl"
             #include "Packages/com.unity.toongraphics/CharacterShadowMap/CharacterShadowDepthPass.hlsl"
             ENDHLSL
         }
@@ -1492,6 +1491,7 @@ Shader "Toon" {
             #pragma multi_compile _OUTLINE_NML _OUTLINE_POS
             // CUSTOM
             #pragma shader_feature _USE_OIT
+            #pragma shader_feature _USE_OIT_OUTLINE
             // Outline is implemented in UniversalToonOutline.hlsl.
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
