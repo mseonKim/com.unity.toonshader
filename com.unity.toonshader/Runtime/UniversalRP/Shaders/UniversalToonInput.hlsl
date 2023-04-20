@@ -80,8 +80,10 @@ float _Tweak_RimLightMaskLevel;
 fixed _MatCap;
 
 float4 _MatCap_Sampler_ST;
+float4 _MatCap_Sampler2_ST;
 
 float4 _MatCapColor;
+float4 _MatCapColor2;
 fixed _Is_LightColor_MatCap;
 fixed _Is_BlendAddToMatCap;
 float _Tweak_MatCapUV;
@@ -95,6 +97,7 @@ float _TweakMatCapOnShadow;
 //MatcapMask
 // 
 float4 _Set_MatcapMask_ST;
+float4 _Set_MatcapMask2_ST;
 float _Tweak_MatcapMaskLevel;
 
 fixed _Is_Ortho;
@@ -218,8 +221,10 @@ sampler2D _HighColor_Tex;
 sampler2D _Set_HighColorMask;
 sampler2D _Set_RimLightMask;
 sampler2D _MatCap_Sampler;
+TEXTURE2D(_MatCap_Sampler2);
 sampler2D _NormalMapForMatCap;
 sampler2D _Set_MatcapMask;
+TEXTURE2D(_Set_MatcapMask2);
 sampler2D _Emissive_Tex;
 //sampler2D _ClippingMask;
 TEXTURE2D(_ClippingMask);
@@ -237,7 +242,6 @@ TEXTURE2D(_SpecGlossMap);       SAMPLER(sampler_SpecGlossMap);
 
 /// CUSTOM
 TEXTURE2D(_SDF_Tex);       SAMPLER(sampler_SDF_Tex);
-TEXTURE2D(_SDF_ShadowMask_Tex);       SAMPLER(sampler_SDF_ShadowMask_Tex);
 TEXTURE2D(_Hair_Highlight_Tex);       SAMPLER(sampler_Hair_Highlight_Tex);
 /// CUSTOM END
 

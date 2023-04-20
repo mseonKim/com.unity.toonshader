@@ -128,9 +128,11 @@ Shader "Toon" {
 //
         [Toggle(_)] _MatCap ("MatCap", Float ) = 0
         _MatCap_Sampler ("MatCap_Sampler", 2D) = "black" {}
+        _MatCap_Sampler2 ("MatCap_Sampler2", 2D) = "black" {}
         //v.2.0.6
         _BlurLevelMatcap ("Blur Level of MatCap_Sampler", Range(0, 10)) = 0
         _MatCapColor ("MatCapColor", Color) = (1,1,1,1)
+        _MatCapColor2 ("MatCapColor2", Color) = (1,1,1,1)
         [Toggle(_)] _Is_LightColor_MatCap ("Is_LightColor_MatCap", Float ) = 1
         [Toggle(_)] _Is_BlendAddToMatCap ("Is_BlendAddToMatCap", Float ) = 1
         _Tweak_MatCapUV ("Tweak_MatCapUV", Range(-0.5, 0.5)) = 0
@@ -145,6 +147,7 @@ Shader "Toon" {
         _TweakMatCapOnShadow ("TweakMatCapOnShadow", Range(0, 1)) = 0
 //MatcapMask
         _Set_MatcapMask ("Set_MatcapMask", 2D) = "white" {}
+        _Set_MatcapMask2 ("Set_MatcapMask2", 2D) = "white" {}
         _Tweak_MatcapMaskLevel ("Tweak_MatcapMaskLevel", Range(-1, 1)) = 0
         [Toggle(_)] _Inverse_MatcapMask ("Inverse_MatcapMask", Float ) = 0
         //v.2.0.5
@@ -477,7 +480,7 @@ Shader "Toon" {
         _SDF_Tex("SDF_Tex", 2D) = "white" {}    // Alpha: SDF_ShadowMask for shadow ray
         _SDF_Offset("SDF_Offset", Float) = 0.0
         _FaceForward("Face Forward Vector", Vector) = (0, 0, 1, 0)
-        _SDF_BlurIntensity("SDF Blur Intensity", Range(0.0, 0.02)) = 0.0025
+        _SDF_BlurIntensity("SDF Blur Intensity", Range(0.0, 0.02)) = 0.0001 // = 1.0 / Texture.size
         [ToggleUI] _SDF_Reverse("One Minus Texture Value", Float) = 0.0
         _Hair_Highlight_Tex("Hair Highlight Tex", 2D) = "white" {}
         _HairHiUVOffset("Hair Highlight UV Offset", Range(0.0, 0.2)) = 0.05

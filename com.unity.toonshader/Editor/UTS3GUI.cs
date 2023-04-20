@@ -113,7 +113,9 @@ namespace UnityEditor.Rendering.Toon
         internal const string ShaderProp_HighColor_Tex = "_HighColor_Tex";
         internal const string ShaderProp_Set_HighColorMask = "_Set_HighColorMask";
         internal const string ShaderProp_MatCap_Sampler = "_MatCap_Sampler";
+        internal const string ShaderProp_MatCap_Sampler2 = "_MatCap_Sampler2";  // CUSTOM
         internal const string ShaderProp_Set_MatcapMask = "_Set_MatcapMask";
+        internal const string ShaderProp_Set_MatcapMask2 = "_Set_MatcapMask2";  // CUSTOM
         internal const string ShaderProp_OutlineTex = "_OutlineTex";
         internal const string ShaderProp_Outline_Sampler = "_Outline_Sampler";
 
@@ -407,10 +409,13 @@ namespace UnityEditor.Rendering.Toon
         protected MaterialProperty set_RimLightMask = null;
 
         protected MaterialProperty matCap_Sampler = null;
+        protected MaterialProperty matCap_Sampler2 = null;
         protected MaterialProperty matCapColor = null;
+        protected MaterialProperty matCapColor2 = null;
         protected MaterialProperty normalMapForMatCap = null;
         protected MaterialProperty bumpScaleMatcap = null;
         protected MaterialProperty set_MatcapMask = null;
+        protected MaterialProperty set_MatcapMask2 = null;
 
         protected MaterialProperty angelRing_Sampler = null;
         protected MaterialProperty angelRing_Color = null;
@@ -503,13 +508,16 @@ namespace UnityEditor.Rendering.Toon
             set_RimLightMask = FindProperty(ShaderProp_Set_RimLightMask, props);
 
             matCap_Sampler = FindProperty(ShaderProp_MatCap_Sampler, props);
+            matCap_Sampler2 = FindProperty(ShaderProp_MatCap_Sampler2, props);  // CUSTOM
             matCapColor = FindProperty("_MatCapColor", props);
+            matCapColor2 = FindProperty("_MatCapColor2", props);                // CUSTOM
 
             normalMapForMatCap = FindProperty("_NormalMapForMatCap", props);
             bumpScaleMatcap = FindProperty("_BumpScaleMatcap", props);
 
 
             set_MatcapMask = FindProperty(ShaderProp_Set_MatcapMask, props);
+            set_MatcapMask2 = FindProperty(ShaderProp_Set_MatcapMask2, props);  // CUSTOM
 
             angelRing_Sampler = FindProperty("_AngelRing_Sampler", props, false);
             angelRing_Color = FindProperty("_AngelRing_Color", props, false);
@@ -630,7 +638,9 @@ namespace UnityEditor.Rendering.Toon
             public static readonly GUIContent highColorMaskText = new GUIContent("Highlight Mask", "A grayscale texture which utilises its brightness to control intensity.");
             public static readonly GUIContent rimLightMaskText = new GUIContent("Rim Light Mask", "Rim Light Mask : Texture(linear). The white part of the texture is displayed as Rim Light, and the black part is masked and not displayed.");
             public static readonly GUIContent matCapSamplerText = new GUIContent("MatCap Map", "MatCap Color : Texture(sRGB) × Color(RGB) Default:White");
+            public static readonly GUIContent matCapSampler2Text = new GUIContent("MatCap Map2", "MatCap Color : Texture(sRGB) × Color(RGB) Default:White");
             public static readonly GUIContent matCapMaskText = new GUIContent("MatCap Mask", "The MatCap mask is positioned with respect to the UV coordinates of the mesh onto which the MatCap is projected, and the pixels on black areas are hidden.");
+            public static readonly GUIContent matCapMask2Text = new GUIContent("MatCap Mask2", "The MatCap mask is positioned with respect to the UV coordinates of the mesh onto which the MatCap is projected, and the pixels on black areas are hidden.");
             public static readonly GUIContent angelRingText = new GUIContent("Angel Ring", "Angel Ring : Texture(sRGB) × Color(RGB) Default:Black.");
             public static readonly GUIContent emissiveTexText = new GUIContent("Emission Map", "Primarily used with the Bloom Post Effect, Luminous objects can be represented.");
             public static readonly GUIContent shadingGradeMapText = new GUIContent("Shading Grade Map", "Specify shadow-prone areas in UV coordinates. Shading Grade Map : Texture(linear)");
@@ -1781,6 +1791,10 @@ namespace UnityEditor.Rendering.Toon
             m_MaterialEditor.TexturePropertySingleLine(Styles.matCapSamplerText, matCap_Sampler, matCapColor);
             EditorGUI.indentLevel++;
             m_MaterialEditor.TextureScaleOffsetProperty(matCap_Sampler);
+            EditorGUI.indentLevel--;
+            m_MaterialEditor.TexturePropertySingleLine(Styles.matCapSampler2Text, matCap_Sampler2, matCapColor2);
+            EditorGUI.indentLevel++;
+            m_MaterialEditor.TextureScaleOffsetProperty(matCap_Sampler2);
 
             if (!_SimpleUI)
             {
@@ -1834,6 +1848,8 @@ namespace UnityEditor.Rendering.Toon
             EditorGUILayout.LabelField("MatCap Mask", EditorStyles.boldLabel);
             m_MaterialEditor.TexturePropertySingleLine(Styles.matCapMaskText, set_MatcapMask);
             m_MaterialEditor.TextureScaleOffsetProperty(set_MatcapMask);
+            m_MaterialEditor.TexturePropertySingleLine(Styles.matCapMask2Text, set_MatcapMask2);
+            m_MaterialEditor.TextureScaleOffsetProperty(set_MatcapMask2);
             GUI_RangeProperty(material, Styles.tweakMatCapMaskLevelText);
 
             GUI_Toggle(material, Styles.invertMatCapMaskText, ShaderPropInvert_MatcapMask, MaterialGetInt(material, ShaderPropInvert_MatcapMask) != 0);
