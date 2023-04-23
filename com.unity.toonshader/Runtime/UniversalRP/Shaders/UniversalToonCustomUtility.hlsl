@@ -16,6 +16,9 @@
 // 9. _HeadUpWorldDir
 // 10. _HairHiUVOffset
 // 11. _SDF_Reverse
+// 12. _SSS_Power
+// 13. _SSS_Scale
+// 14. _SSS_Normal_Distortion
 
 
 half LinearStep(float m, float M, float x)
@@ -57,6 +60,7 @@ half GetFaceSDFAtten(half3 lightDir, float2 uv)
     // Reverse if need
     _SDF_var = lerp(_SDF_var, 1.0 - _SDF_var, _SDF_Reverse);
     
+    // TODO: Blur Face Texture
     return (0.0, 1.0, _SDF_var + _SDF_Offset <= NoL);
 }
 
@@ -119,6 +123,41 @@ half ValidateOpaqueDepth(float3 worldPos)
     return SampleSceneDepth(ssUV) < ndc.z;
 }
 
+half3 OITTransmittance(float3 lightDir, float3 viewDir, float3 normal, half3 diffuse, half3 lightColor, float3 worldPos, float opacity)
+{
+    float4 clipPos = CharShadowWorldToHClip(worldPos);
+    float3 ndc = clipPos.xyz / clipPos.w;
+    float2 ssUV = ndc.xy * 0.5 + 0.5;
+#if UNITY_UV_STARTS_AT_TOP
+    ssUV.y = 1.0 - ssUV.y;
+#endif
+
+    float NoL = saturate(dot(-lightDir, normal));
+    NoL = LinearStep(0.49, 0.51, NoL);
+    float o = 1.0 / 2048.0;   // Should be matched with atlas size
+    float tr = 1 - TransparentAttenuation(ssUV, opacity);
+    float scale = 0.66;
+
+    // lightColor : actual light color * attenuation
+    half3 col = diffuse * lightColor * tr * NoL * scale;
+    return col;
+}
+
+half3 SubsurfaceScattering(float3 lightDir, float3 viewDir, float3 normal, half3 diffuse, half3 lightColor)
+{
+    const float3 tr = float3(0.4, 0.25, 0.2);
+    float fLTDot = pow(saturate(dot(-lightDir + normal * _SSS_Normal_Distortion, viewDir)), _SSS_Power) * _SSS_Scale;
+    // float fLTDot = pow(saturate(dot(-lightDir, normal)), power) * scale;
+    if (fLTDot < 0)
+    {
+        return 0;
+    }
+    fLTDot = LinearStep(0.25, 0.75, fLTDot);
+
+    // lightColor : actual light color * attenuation
+    half3 col = diffuse * lightColor * tr * fLTDot;
+    return col;
+}
 
 
 #endif // UNIVERSAL_TOON_CUSTOM_UTILITY_INCLUDED

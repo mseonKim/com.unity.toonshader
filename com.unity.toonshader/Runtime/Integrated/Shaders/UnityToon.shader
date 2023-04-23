@@ -477,6 +477,7 @@ Shader "Toon" {
 
         // --------------------------
         // CUSTOM
+        _MinLightIntensity("Min Light Intensity", Range(0.01, 1)) = 0.1 // = 1.0 / Texture.size
         _SDF_Tex("SDF_Tex", 2D) = "white" {}    // Alpha: SDF_ShadowMask for shadow ray
         _SDF_Offset("SDF_Offset", Float) = 0.0
         _FaceForward("Face Forward Vector", Vector) = (0, 0, 1, 0)
@@ -486,6 +487,9 @@ Shader "Toon" {
         _HairHiUVOffset("Hair Highlight UV Offset", Range(0.0, 0.2)) = 0.05
         _HeadWorldPos("Head Position (for hair highlight)", Vector) = (0, 0, 0, 0)
         _HeadUpWorldDir("Head Up World Vector (for hair highlight)", Vector) = (0, 0, 1, 0)
+        _SSS_Power("SSS Power", Range(1.0, 64.0)) = 16.0
+        _SSS_Scale("SSS Scale", Range(0.0, 4.0)) = 0.5
+        _SSS_Normal_Distortion("SSS Normal Distortion", Range(0.0, 1.0)) = 0.5
 	//////////////////////////////////////////////////////////////////////////////
 	//////////////////// End of HDRP material default values. ////////////////////
 	//////////////////////////////////////////////////////////////////////////////
@@ -1267,6 +1271,7 @@ Shader "Toon" {
             #pragma shader_feature _USE_CHAR_SHADOW
             #pragma shader_feature _USE_ANISOTROPIC_HAIR
             #pragma shader_feature _USE_OIT
+            #pragma shader_feature _USE_SSS
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"

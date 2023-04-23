@@ -215,6 +215,7 @@ namespace UnityEditor.Rendering.Toon
         internal const string CustomShaderPropUse_ANISOTROPIC_HAIR = "_USE_ANISOTROPIC_HAIR";
         internal const string CustomShaderPropUse_OIT = "_USE_OIT";
         internal const string CustomShaderPropUse_OIT_OUTLINE = "_USE_OIT_OUTLINE";
+        internal const string CustomShaderPropUse_SUBSURFACE_SCATTERING = "_USE_SSS";
         ///
 
 
@@ -725,6 +726,7 @@ namespace UnityEditor.Rendering.Toon
             public static readonly GUIContent hairHighlightSamplerText = new GUIContent("Hair Hightlight Texture", "");
             public static readonly GUIContent oitText = new GUIContent("OIT", "");
             public static readonly GUIContent oitOutlineText = new GUIContent("OIT Outline", "");
+            public static readonly GUIContent sssText = new GUIContent("SSS", "");
             
             // Range properties
             public static readonly RangeProperty metaverseRangePropText = new RangeProperty(
@@ -919,6 +921,9 @@ namespace UnityEditor.Rendering.Toon
                 propName: "_Outline_Color", isHDR: false);
 
             // CUSTOM
+            public static readonly RangeProperty minLightIntensityText = new RangeProperty(label: "Min Light Intensity", tooltip: "",
+                propName: "_MinLightIntensity", defaultValue: 0.25f, min: 0.01f, max: 1f);
+
             public static readonly FloatProperty faceSDFOffsetText = new FloatProperty(label: "Face SDF Offset",
                 tooltip: "",
                 propName: "_SDF_Offset", defaultValue: 0);
@@ -930,6 +935,18 @@ namespace UnityEditor.Rendering.Toon
             public static readonly RangeProperty hairHighlightUVOffset = new RangeProperty(
                 label: "Hair Highlight UV Offset", "",
                 propName: "_HairHiUVOffset", defaultValue: 0.05f, min: 0, max: 0.2f);
+
+            public static readonly RangeProperty sssPowerText = new RangeProperty(
+                label: "SSS Power", "",
+                propName: "_SSS_Power", defaultValue: 16f, min: 1, max: 64f);
+
+            public static readonly RangeProperty sssScaleText = new RangeProperty(
+                label: "SSS Scale", "",
+                propName: "_SSS_Scale", defaultValue: 0.5f, min: 0, max: 4f);
+
+            public static readonly RangeProperty sssNormalDistortionText = new RangeProperty(
+                label: "SSS Normal Distortion", "",
+                propName: "_SSS_Normal_Distortion", defaultValue: 0.5f, min: 0, max: 1f);
         }
         // --------------------------------
 
@@ -2432,6 +2449,10 @@ namespace UnityEditor.Rendering.Toon
             var isAnisotropicHairEnabled  = material.IsKeywordEnabled(CustomShaderPropUse_ANISOTROPIC_HAIR);
             var isOITEnabled  = material.IsKeywordEnabled(CustomShaderPropUse_OIT);
             var isOITOutlineEnabled  = material.IsKeywordEnabled(CustomShaderPropUse_OIT_OUTLINE);
+            var isSSSEnabled  = material.IsKeywordEnabled(CustomShaderPropUse_SUBSURFACE_SCATTERING);
+
+            // Minimum directional light intensity
+            GUI_RangeProperty(material, Styles.minLightIntensityText);
             
             // Face SDF Shadow
             var ret = EditorGUILayout.Toggle(Styles.sdfSamplerText.text, isSDFEnabled);
@@ -2511,6 +2532,27 @@ namespace UnityEditor.Rendering.Toon
                     material.DisableKeyword(CustomShaderPropUse_OIT_OUTLINE);
             }
             EditorGUI.indentLevel--;
+
+            // Subsurface Scattering
+            ret = EditorGUILayout.Toggle(Styles.sssText.text, isSSSEnabled);
+            if (EditorGUI.EndChangeCheck())
+            {
+                m_MaterialEditor.RegisterPropertyChangeUndo(Styles.sssText.text);
+                if (ret)
+                    material.EnableKeyword(CustomShaderPropUse_SUBSURFACE_SCATTERING);
+                else
+                    material.DisableKeyword(CustomShaderPropUse_SUBSURFACE_SCATTERING);
+            }
+
+            EditorGUI.BeginDisabledGroup(isSSSEnabled == false);
+            {
+                EditorGUI.indentLevel++;
+                GUI_RangeProperty(material, Styles.sssPowerText);
+                GUI_RangeProperty(material, Styles.sssScaleText);
+                GUI_RangeProperty(material, Styles.sssNormalDistortionText);
+                EditorGUI.indentLevel--;
+            }
+            EditorGUI.EndDisabledGroup();
         }
 
 

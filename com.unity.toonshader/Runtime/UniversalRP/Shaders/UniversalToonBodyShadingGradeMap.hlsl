@@ -167,13 +167,22 @@
                 float3 finalShadeColor = lerp(_Is_LightColor_1st_Shade_var,lerp( (_2nd_ShadeMap_var.rgb*_2nd_ShadeColor.rgb), ((_2nd_ShadeMap_var.rgb*_2nd_ShadeColor.rgb)*Set_LightColor), _Is_LightColor_2nd_Shade ),Set_ShadeShadowMask);
                 float3 Set_FinalBaseColor = lerp(_BaseColor_var,finalShadeColor,Set_FinalShadowMask);
 
-                // Apply SDF
+                // CUSTOM - Face SDF
 #if _USE_SDF
                 // half3 receivedShadowColor = lerp(finalShadeColor, Set_BaseColor, LinearStep(0.5, 0.5, shadowAttenuation));
                 half sdfAtten = GetFaceSDFAtten(lightDirection, Set_UV0);
                 half3 sdfColor = lerp(finalShadeColor, Set_BaseColor, sdfAtten);
                 // Set_FinalBaseColor = min(sdfColor, receivedShadowColor);
                 Set_FinalBaseColor = sdfColor;
+#endif
+
+                // CUSTOM (OIT transmittance)
+                float opacity = 0;
+#if _IS_CLIPPING_TRANSMODE
+                opacity = _MainTex_var.a * _BaseColor.a * _Inverse_Clipping_var;
+    #if _USE_OIT
+                Set_FinalBaseColor += OITTransmittance(lightDirection, viewDirection, lerp(i.normalDir, normalDirection, _Is_NormalMapToBase), Set_BaseColor, lightColor, inputData.positionWS, opacity);
+    #endif
 #endif
 
 
@@ -342,12 +351,13 @@
 #endif
                 // CUSTOM (Character Shadowmap)
 #if _USE_CHAR_SHADOW
-                float opacity = 0;
-    #if _IS_CLIPPING_TRANSMODE
-                opacity = _MainTex_var.a * _BaseColor.a * _Inverse_Clipping_var;
-    #endif
                 half ssShadowAtten = GetCharMainShadow(inputData.positionWS, Set_UV0, opacity);
                 finalColor = lerp(finalColor, finalShadeColor, ssShadowAtten);
+#endif
+
+                // CUSTOM (SSS)
+#if _USE_SSS
+                finalColor += SubsurfaceScattering(lightDirection, viewDirection, lerp(i.normalDir, normalDirection, _Is_NormalMapToBase), Set_BaseColor, lightColor);
 #endif
 
 //
@@ -373,7 +383,8 @@
                         UtsLight additionalLight = GetUrpMainUtsLight(0,0);
                         additionalLight = GetAdditionalUtsLight(loopCounter, inputData.positionWS, i.positionCS);
                         
-                        half3 finalColor = AdditionalLightingShadingGradeMap(additionalLight, _MainTex_var, Set_UV0, i.normalDir, normalDirection, viewDirection);
+                        half3 finalColor = AdditionalLightingShadingGradeMap(additionalLight, _MainTex_var, Set_UV0, i.normalDir, normalDirection, viewDirection, inputData.positionWS, opacity);
+                        finalColor = lerp(finalColor, 0, ssShadowAtten);
                         pointLightColor +=  finalColor;
                     }
                 }
@@ -396,7 +407,8 @@
                             additionalLight = GetAdditionalUtsLight(iLight, inputData.positionWS, i.positionCS);
                         }
                         
-                        half3 finalColor = AdditionalLightingShadingGradeMap(additionalLight, _MainTex_var, Set_UV0, i.normalDir, normalDirection, viewDirection);
+                        half3 finalColor = AdditionalLightingShadingGradeMap(additionalLight, _MainTex_var, Set_UV0, i.normalDir, normalDirection, viewDirection, inputData.positionWS, opacity);
+                        finalColor = lerp(finalColor, 0, ssShadowAtten);
                         pointLightColor +=  finalColor;
                         //	pointLightColor += lightColor;
                     }

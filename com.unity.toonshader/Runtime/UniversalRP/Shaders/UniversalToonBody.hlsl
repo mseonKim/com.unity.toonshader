@@ -291,7 +291,7 @@
                 light.distanceAttenuation *= unity_ProbesOcclusion.x;
 #endif
                 light.shadowAttenuation = 1.0;
-                light.color = _MainLightColor.rgb;
+                light.color = lerp(_MainLightColor.rgb, max(_MainLightColor.rgb, _MinLightIntensity.rrr), _MainLightColor.rgb > 0);
                 light.type = _MainLightPosition.w;
                 return light;
             }
