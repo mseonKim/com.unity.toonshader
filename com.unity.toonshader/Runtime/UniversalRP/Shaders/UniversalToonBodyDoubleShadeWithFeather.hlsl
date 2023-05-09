@@ -100,12 +100,12 @@
                 clip(Set_Clipping - 0.5);
 
                 // CUSTOM - OIT
-    #ifdef _USE_OIT
-                if (ValidateOpaqueDepth(i.posWorld.xyz) == 0)
-                {
-                    clip(-1);
-                }
-    #endif
+    // #ifdef _USE_OIT
+                // if (ValidateOpaqueDepth(i.posWorld.xyz) == 0)
+                // {
+                //     clip(-1);
+                // }
+    // #endif
 #elif defined(_IS_CLIPPING_OFF) || defined(_IS_TRANSCLIPPING_OFF)
 //DoubleShadeWithFeather
 #endif

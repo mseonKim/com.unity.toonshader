@@ -73,6 +73,10 @@
                 o.pos.z = o.pos.z + _Offset_Z * _ClipCameraPos.z;
                 return o;
             }
+
+#ifdef _USE_OIT // CUSTOM_OIT
+            [earlydepthstencil]
+#endif
             float4 frag(VertexOutput i) : SV_Target{
                 //v.2.0.5
 #ifndef _USE_OIT_OUTLINE // CUSTOM - OIT Outline

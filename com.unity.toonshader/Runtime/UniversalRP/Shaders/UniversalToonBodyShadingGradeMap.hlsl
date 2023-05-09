@@ -93,12 +93,12 @@
                 clip(Set_Clipping - 0.5);
 
                 // CUSTOM - OIT
-    #ifdef _USE_OIT
-                if (ValidateOpaqueDepth(i.posWorld.xyz) == 0)
-                {
-                    clip(-1);
-                }
-    #endif
+    // #ifdef _USE_OIT
+    //             if (ValidateOpaqueDepth(i.posWorld.xyz) == 0)
+    //             {
+    //                 clip(-1);
+    //             }
+    // #endif
 #endif
 
 

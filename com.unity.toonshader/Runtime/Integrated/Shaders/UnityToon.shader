@@ -1214,6 +1214,7 @@ Shader "Toon" {
             #pragma target 5.0
             #pragma prefer_hlslcc gles
             #pragma exclude_renderers d3d11_9x
+            // #pragma enable_d3d11_debug_symbols
 
             #pragma vertex vert
             #pragma fragment frag
@@ -1386,14 +1387,16 @@ Shader "Toon" {
             ZWrite On
             ZTest LEqual
             Cull Off
+            BlendOp Max
 
             HLSLPROGRAM
-            #pragma target 2.0
+            // #pragma target 2.0
 	    
             // Required to compile gles 2.0 with standard srp library
-            #pragma prefer_hlslcc gles
-            #pragma exclude_renderers d3d11_9x
-            #pragma shader_feature_local _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            // #pragma prefer_hlslcc gles
+            // #pragma exclude_renderers d3d11_9x
+            // #pragma shader_feature_local _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            // #pragma enable_d3d11_debug_symbols
 
             #pragma vertex CharShadowVertex
             #pragma fragment CharShadowFragment
@@ -1414,12 +1417,13 @@ Shader "Toon" {
             BlendOp Max, Add
 
             HLSLPROGRAM
-            #pragma target 2.0
+            // #pragma target 2.0
 	    
             // Required to compile gles 2.0 with standard srp library
-            #pragma prefer_hlslcc gles
-            #pragma exclude_renderers d3d11_9x
-            #pragma shader_feature_local _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            // #pragma prefer_hlslcc gles
+            // #pragma exclude_renderers d3d11_9x
+            // #pragma shader_feature_local _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            // #pragma enable_d3d11_debug_symbols
             #pragma shader_feature_local _ALPHATEST_ON
 
             #pragma vertex TransparentShadowVert
@@ -1445,6 +1449,7 @@ Shader "Toon" {
             #pragma target 2.0
             #pragma vertex vert
             #pragma fragment frag
+            // #pragma enable_d3d11_debug_symbols
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             struct Attributes
@@ -1492,6 +1497,7 @@ Shader "Toon" {
             #pragma target 2.0
             #pragma vertex vert
             #pragma fragment frag
+            // #pragma enable_d3d11_debug_symbols
 
 
             //V.2.0.4

@@ -229,7 +229,7 @@
 #elif defined(_MAIN_LIGHT_SHADOWS_SCREEN)
                 return SampleScreenSpaceShadowmap(shadowCoord);
 #endif
-                return SampleShadowmap(TEXTURE2D_ARGS(_MainLightShadowmapTexture, sampler_MainLightShadowmapTexture), shadowCoord, shadowSamplingData, shadowParams, false);
+                return SampleShadowmap(TEXTURE2D_ARGS(_MainLightShadowmapTexture, sampler_LinearClampCompare), shadowCoord, shadowSamplingData, shadowParams, false);
             }
 
             half AdditionalLightRealtimeShadowUTS(int lightIndex, float3 positionWS, float4 positionCS)
@@ -264,7 +264,7 @@
 #endif
 
                 half4 shadowParams = GetAdditionalLightShadowParams(lightIndex);
-                return SampleShadowmap(TEXTURE2D_ARGS(_AdditionalLightsShadowmapTexture, sampler_AdditionalLightsShadowmapTexture), shadowCoord, shadowSamplingData, shadowParams, true);
+                return SampleShadowmap(TEXTURE2D_ARGS(_AdditionalLightsShadowmapTexture, sampler_LinearClampCompare), shadowCoord, shadowSamplingData, shadowParams, true);
 #else
                 return 1.0h;
 #endif
@@ -492,6 +492,9 @@
 
 #endif //#if defined(_SHADINGGRADEMAP)
 
+#ifdef _USE_OIT // CUSTOM_OIT
+        [earlydepthstencil]
+#endif
         float4 frag(VertexOutput i, fixed facing : VFACE, uint uSampleIdx : SV_SampleIndex) : SV_TARGET
             {
 #if defined(_SHADINGGRADEMAP)
