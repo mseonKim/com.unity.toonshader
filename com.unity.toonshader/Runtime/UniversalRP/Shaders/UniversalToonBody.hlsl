@@ -360,11 +360,16 @@
             UtsLight GetAdditionalUtsLight(uint i, float3 positionWS,float4 positionCS)
             {
 #if USE_FORWARD_PLUS
-                int perObjectLightIndex = i;
+                int lightIndex = i;
 #else
-                int perObjectLightIndex = GetPerObjectLightIndex(i);
+                int lightIndex = GetPerObjectLightIndex(i);
 #endif
-                return GetAdditionalPerObjectUtsLight(perObjectLightIndex, positionWS, positionCS);
+                UtsLight light = GetAdditionalPerObjectUtsLight(lightIndex, positionWS, positionCS);
+#if defined(_LIGHT_COOKIES)
+                real3 cookieColor = SampleAdditionalLightCookie(lightIndex, positionWS);
+                light.color *= cookieColor;
+#endif
+                return light;
             }
 
             half3 GetLightColor(UtsLight light)

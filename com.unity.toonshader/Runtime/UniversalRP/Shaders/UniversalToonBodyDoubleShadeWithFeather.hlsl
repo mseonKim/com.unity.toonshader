@@ -98,14 +98,7 @@
                 float _Inverse_Clipping_var = lerp( _IsBaseMapAlphaAsClippingMask_var, (1.0 - _IsBaseMapAlphaAsClippingMask_var), _Inverse_Clipping );
                 float Set_Clipping = saturate((_Inverse_Clipping_var+_Clipping_Level));
                 clip(Set_Clipping - 0.5);
-
-                // CUSTOM - OIT
-    // #ifdef _USE_OIT
-                // if (ValidateOpaqueDepth(i.posWorld.xyz) == 0)
-                // {
-                //     clip(-1);
-                // }
-    // #endif
+                
 #elif defined(_IS_CLIPPING_OFF) || defined(_IS_TRANSCLIPPING_OFF)
 //DoubleShadeWithFeather
 #endif
@@ -321,7 +314,6 @@
                         additionalLight = GetAdditionalUtsLight(iLight, inputData.positionWS,i.positionCS);
 
                         half3 finalColor = AdditionalLighting(additionalLight, _MainTex_var, Set_UV0, i.normalDir, normalDirection, viewDirection, inputData.positionWS, opacity);
-                        finalColor = lerp(finalColor, 0, ssShadowAtten);
                         pointLightColor += finalColor;
                     }
                 }
@@ -344,8 +336,7 @@
                             additionalLight = GetAdditionalUtsLight(iLight, inputData.positionWS,i.positionCS);
                         }
 
-                        half3 finalColor = AdditionalLighting(additionalLight, _MainTex_var, Set_UV0, i.normalDir, normalDirection, viewDirection, inputData.positionWS, opacity);
-                        finalColor = lerp(finalColor, 0, ssShadowAtten);
+                        half3 finalColor = AdditionalLighting(additionalLight, _MainTex_var, Set_UV0, i.normalDir, normalDirection, viewDirection, inputData.positionWS, opacity, iLight);
                         pointLightColor += finalColor;
                     }
                 UTS_LIGHT_LOOP_END

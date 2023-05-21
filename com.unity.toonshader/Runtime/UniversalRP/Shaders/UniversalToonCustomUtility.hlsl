@@ -2,7 +2,7 @@
 #define UNIVERSAL_TOON_CUSTOM_UTILITY_INCLUDED
 
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
-#include "Packages/com.unity.toongraphics/CharacterShadowMap/DeclareCharacterShadowTexture.hlsl"
+#include "Packages/com.unity.toongraphics/CharacterShadowMap/Shaders/DeclareCharacterShadowTexture.hlsl"
 
 // Required Uniforms:
 // 1. _SDF_Tex
@@ -90,6 +90,29 @@ half GetCharMainShadow(float3 worldPos, float2 uv, float opacity)
     return GetCharacterAndTransparentShadowmap(ssUV, ndc.z, opacity);
 }
 
+half GetCharAdditionalShadow(float3 worldPos, float2 uv, float opacity, uint lightIndex = 0)
+{
+#ifndef USE_FORWARD_PLUS
+    return 0;
+#endif
+    uint i = LocalLightIndexToShadowmapIndex(lightIndex);
+    if (i >= MAX_CHAR_SHADOWMAPS)
+        return 0;
+
+    float4 clipPos = CharShadowWorldToHClip(worldPos, i);
+#if UNITY_REVERSED_Z
+    clipPos.z = min(clipPos.z, UNITY_NEAR_CLIP_VALUE);
+#else
+    clipPos.z = max(clipPos.z, UNITY_NEAR_CLIP_VALUE);
+#endif
+    float3 ndc = clipPos.xyz / clipPos.w;
+    float2 ssUV = ndc.xy * 0.5 + 0.5;
+#if UNITY_UV_STARTS_AT_TOP
+    ssUV.y = 1.0 - ssUV.y;
+#endif
+    return GetCharacterAndTransparentShadowmap(ssUV, ndc.z, opacity, i);
+}
+
 
 half3 AnisotropicHairHighlight(float3 viewDirection, float2 uv, float3 worldPos)
 {
@@ -112,17 +135,6 @@ half3 AnisotropicHairHighlight(float3 viewDirection, float2 uv, float3 worldPos)
 // }
 
 
-half ValidateOpaqueDepth(float3 worldPos)
-{
-    float4 clipPos = TransformWorldToHClip(worldPos);
-    float3 ndc = clipPos.xyz / clipPos.w;
-    float2 ssUV = ndc.xy * 0.5 + 0.5;
-#if UNITY_UV_STARTS_AT_TOP
-    ssUV.y = 1.0 - ssUV.y;
-#endif
-    return SampleSceneDepth(ssUV) < ndc.z;
-}
-
 half3 OITTransmittance(float3 lightDir, float3 viewDir, float3 normal, half3 diffuse, half3 lightColor, float3 worldPos, float opacity)
 {
     float4 clipPos = CharShadowWorldToHClip(worldPos);
@@ -136,6 +148,33 @@ half3 OITTransmittance(float3 lightDir, float3 viewDir, float3 normal, half3 dif
     NoL = LinearStep(0.49, 0.51, NoL);
     float o = 1.0 / 2048.0;   // Should be matched with atlas size
     float tr = 1 - TransparentAttenuation(ssUV, opacity);
+    float scale = 0.66;
+
+    // lightColor : actual light color * attenuation
+    half3 col = diffuse * lightColor * tr * NoL * scale;
+    return col;
+}
+
+half3 AdditionalOITTransmittance(float3 lightDir, float3 viewDir, float3 normal, half3 diffuse, half3 lightColor, float3 worldPos, float opacity, uint lightIndex = 0)
+{
+#ifndef USE_FORWARD_PLUS
+    return 0;
+#endif
+    uint i = LocalLightIndexToShadowmapIndex(lightIndex);
+    if (i >= MAX_CHAR_SHADOWMAPS)
+        return 0;
+
+    float4 clipPos = CharShadowWorldToHClip(worldPos, i);
+    float3 ndc = clipPos.xyz / clipPos.w;
+    float2 ssUV = ndc.xy * 0.5 + 0.5;
+#if UNITY_UV_STARTS_AT_TOP
+    ssUV.y = 1.0 - ssUV.y;
+#endif
+
+    float NoL = saturate(dot(-lightDir, normal));
+    NoL = LinearStep(0.49, 0.51, NoL);
+    float o = 1.0 / 2048.0;   // Should be matched with atlas size
+    float tr = 1 - TransparentAttenuation(ssUV, opacity, i);
     float scale = 0.66;
 
     // lightColor : actual light color * attenuation

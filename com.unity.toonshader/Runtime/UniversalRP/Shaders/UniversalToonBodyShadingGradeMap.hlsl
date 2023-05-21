@@ -92,13 +92,6 @@
                 float Set_Clipping = saturate((_Inverse_Clipping_var+_Clipping_Level));
                 clip(Set_Clipping - 0.5);
 
-                // CUSTOM - OIT
-    // #ifdef _USE_OIT
-    //             if (ValidateOpaqueDepth(i.posWorld.xyz) == 0)
-    //             {
-    //                 clip(-1);
-    //             }
-    // #endif
 #endif
 
 
@@ -384,7 +377,6 @@
                         additionalLight = GetAdditionalUtsLight(loopCounter, inputData.positionWS, i.positionCS);
                         
                         half3 finalColor = AdditionalLightingShadingGradeMap(additionalLight, _MainTex_var, Set_UV0, i.normalDir, normalDirection, viewDirection, inputData.positionWS, opacity);
-                        finalColor = lerp(finalColor, 0, ssShadowAtten);
                         pointLightColor +=  finalColor;
                     }
                 }
@@ -407,8 +399,7 @@
                             additionalLight = GetAdditionalUtsLight(iLight, inputData.positionWS, i.positionCS);
                         }
                         
-                        half3 finalColor = AdditionalLightingShadingGradeMap(additionalLight, _MainTex_var, Set_UV0, i.normalDir, normalDirection, viewDirection, inputData.positionWS, opacity);
-                        finalColor = lerp(finalColor, 0, ssShadowAtten);
+                        half3 finalColor = AdditionalLightingShadingGradeMap(additionalLight, _MainTex_var, Set_UV0, i.normalDir, normalDirection, viewDirection, inputData.positionWS, opacity, iLight);
                         pointLightColor +=  finalColor;
                         //	pointLightColor += lightColor;
                     }

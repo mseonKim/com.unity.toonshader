@@ -1,10 +1,11 @@
-float3 AdditionalLighting(UtsLight additionalLight, float4 _MainTex_var, float2 Set_UV0, float3 normalDir, float3 normalDirection, float3 viewDirection, float3 worldPos, float opacity)
+float3 AdditionalLighting(UtsLight additionalLight, float4 _MainTex_var, float2 Set_UV0, float3 normalDir, float3 normalDirection, float3 viewDirection, float3 worldPos, float opacity, uint lightIndex = 0)
 {
     float notDirectional = 1.0f; //_WorldSpaceLightPos0.w of the legacy code.
     half3 additionalLightColor = GetLightColor(additionalLight);
     float3 lightDirection = additionalLight.direction;
     //v.2.0.5: 
-    float3 addPassLightColor = (0.5*dot(lerp(normalDir, normalDirection, _Is_NormalMapToBase), lightDirection) + 0.5) * additionalLightColor.rgb;
+    half3 addPassLightColor = additionalLightColor;
+    // float3 addPassLightColor = (0.5*dot(lerp(normalDir, normalDirection, _Is_NormalMapToBase), lightDirection) + 0.5) * additionalLightColor.rgb;
     float  pureIntencity = max(0.001, (0.299*additionalLightColor.r + 0.587*additionalLightColor.g + 0.114*additionalLightColor.b));
     float3 lightColor = max(float3(0.0,0.0,0.0), lerp(addPassLightColor, lerp(float3(0.0,0.0,0.0), min(addPassLightColor, addPassLightColor / pureIntencity), notDirectional), _Is_Filter_LightColor));
     float3 halfDirection = normalize(viewDirection + lightDirection); // has to be recalced here.
@@ -16,7 +17,7 @@ float3 AdditionalLighting(UtsLight additionalLight, float4 _MainTex_var, float2 
     //v.2.0.5: If Added lights is directional, set 0 as _LightIntensity
     float _LightIntensity = lerp(0, (0.299*additionalLightColor.r + 0.587*additionalLightColor.g + 0.114*additionalLightColor.b), notDirectional);
     //v.2.0.5: Filtering the high intensity zone of PointLights
-    float3 Set_LightColor = lightColor;
+    float3 Set_LightColor = addPassLightColor;  // = lightColor
     //
     float3 Set_BaseColor = lerp((_BaseColor.rgb*_MainTex_var.rgb*_LightIntensity), ((_BaseColor.rgb*_MainTex_var.rgb)*Set_LightColor), _Is_LightColor_Base);
     //v.2.0.5
@@ -33,11 +34,14 @@ float3 AdditionalLighting(UtsLight additionalLight, float4 _MainTex_var, float2 
     //v.2.0.5:
     float Set_FinalShadowMask = saturate((1.0 + ((lerp(_HalfLambert_var, (_HalfLambert_var*saturate(1.0 + _Tweak_SystemShadowsLevel)), _Set_SystemShadowsToBase) - (baseColorStep - _BaseShade_Feather)) * ((1.0 - _Set_1st_ShadePosition_var.rgb).r - 1.0)) / (baseColorStep - (baseColorStep - _BaseShade_Feather))));
     //Composition: 3 Basic Colors as finalColor
-    // float3 finalColor = lerp(Set_BaseColor, lerp(Set_1st_ShadeColor, Set_2nd_ShadeColor, saturate((1.0 + ((_HalfLambert_var - (shadeColorStep - _1st2nd_Shades_Feather)) * ((1.0 - _Set_2nd_ShadePosition_var.rgb).r - 1.0)) / (shadeColorStep - (shadeColorStep - _1st2nd_Shades_Feather))))), Set_FinalShadowMask); // Final Color
+    float3 finalShadeColor = lerp(Set_1st_ShadeColor, Set_2nd_ShadeColor, saturate((1.0 + ((_HalfLambert_var - (shadeColorStep - _1st2nd_Shades_Feather)) * ((1.0 - _Set_2nd_ShadePosition_var.rgb).r - 1.0)) / (shadeColorStep - (shadeColorStep - _1st2nd_Shades_Feather)))));
+    float3 finalColor = lerp(Set_BaseColor, 0, Set_FinalShadowMask); // Final Color
+
+#if _IS_CLIPPING_TRANSMODE && _USE_OIT  // CUSTOM (OIT Transmittance)
+    finalColor += AdditionalOITTransmittance(lightDirection, viewDirection, lerp(normalDir, normalDirection, _Is_NormalMapToBase), Set_BaseColor, Set_LightColor, worldPos, opacity, lightIndex);
+#endif
 
     //v.2.0.6: Add HighColor if _Is_Filter_HiCutPointLightColor is False
-
-
     float4 _Set_HighColorMask_var = tex2D(_Set_HighColorMask, TRANSFORM_TEX(Set_UV0, _Set_HighColorMask));
 
     float _Specular_var = 0.5*dot(halfDirection, lerp(normalDir, normalDirection, _Is_NormalMapToHighColor)) + 0.5; //  Specular                
@@ -47,29 +51,30 @@ float3 AdditionalLighting(UtsLight additionalLight, float4 _MainTex_var, float2 
 
     float3 _HighColor_var = (lerp((_HighColor_Tex_var.rgb*_HighColor.rgb), ((_HighColor_Tex_var.rgb*_HighColor.rgb)*Set_LightColor), _Is_LightColor_HighColor)*_TweakHighColorMask_var);
 
-    float3 finalColor = Set_BaseColor + lerp(lerp(_HighColor_var, (_HighColor_var*((1.0 - Set_FinalShadowMask) + (Set_FinalShadowMask*_TweakHighColorOnShadow))), _Is_UseTweakHighColorOnShadow), float3(0, 0, 0), _Is_Filter_HiCutPointLightColor);
-    // finalColor = finalColor + lerp(lerp(_HighColor_var, (_HighColor_var*((1.0 - Set_FinalShadowMask) + (Set_FinalShadowMask*_TweakHighColorOnShadow))), _Is_UseTweakHighColorOnShadow), float3(0, 0, 0), _Is_Filter_HiCutPointLightColor);
+    finalColor = finalColor + lerp(lerp(_HighColor_var, (_HighColor_var*((1.0 - Set_FinalShadowMask) + (Set_FinalShadowMask*_TweakHighColorOnShadow))), _Is_UseTweakHighColorOnShadow), float3(0, 0, 0), _Is_Filter_HiCutPointLightColor);
 
     finalColor = SATURATE_IF_SDR(finalColor);
-    finalColor = lerp(finalColor, 0, Set_FinalShadowMask);
+    // finalColor = lerp(finalColor, 0, Set_FinalShadowMask);
 
-#if _IS_CLIPPING_TRANSMODE && _USE_OIT  // CUSTOM (OIT Transmittance)
-    finalColor += OITTransmittance(lightDirection, viewDirection, lerp(normalDir, normalDirection, _Is_NormalMapToBase), Set_BaseColor, Set_LightColor, worldPos, opacity);
+#if _USE_CHAR_SHADOW    // CUSTOM (Character Shadow)
+    half ssShadowAtten = GetCharAdditionalShadow(worldPos, Set_UV0, opacity, lightIndex);
+    finalColor = lerp(finalColor, 0, ssShadowAtten);
 #endif
 
 #if _USE_SSS    // CUSTOM (SSS)
-    finalColor += SubsurfaceScattering(lightDirection, viewDirection, lerp(normalDir, normalDirection, _Is_NormalMapToBase), Set_BaseColor, Set_LightColor);
+    // finalColor += SubsurfaceScattering(lightDirection, viewDirection, lerp(normalDir, normalDirection, _Is_NormalMapToBase), Set_BaseColor, Set_LightColor);
 #endif
     return finalColor;
 }
 
-float3 AdditionalLightingShadingGradeMap(UtsLight additionalLight, float4 _MainTex_var, float2 Set_UV0, float3 normalDir, float3 normalDirection, float3 viewDirection, float3 worldPos, float opacity)
+float3 AdditionalLightingShadingGradeMap(UtsLight additionalLight, float4 _MainTex_var, float2 Set_UV0, float3 normalDir, float3 normalDirection, float3 viewDirection, float3 worldPos, float opacity, uint lightIndex = 0)
 {
     float notDirectional = 1.0f; //_WorldSpaceLightPos0.w of the legacy code.
     half3 additionalLightColor = GetLightColor(additionalLight);
     float3 lightDirection = additionalLight.direction;
     //v.2.0.5: 
-    float3 addPassLightColor = (0.5*dot(lerp(normalDir, normalDirection, _Is_NormalMapToBase), lightDirection) + 0.5) * additionalLightColor.rgb;
+    half3 addPassLightColor = additionalLightColor;
+    // float3 addPassLightColor = (0.5*dot(lerp(normalDir, normalDirection, _Is_NormalMapToBase), lightDirection) + 0.5) * additionalLightColor.rgb;
     float  pureIntencity = max(0.001, (0.299*additionalLightColor.r + 0.587*additionalLightColor.g + 0.114*additionalLightColor.b));
     float3 lightColor = max(float3(0.0,0.0,0.0), lerp(addPassLightColor, lerp(float3(0.0,0.0,0.0), min(addPassLightColor, addPassLightColor / pureIntencity), notDirectional), _Is_Filter_LightColor));
     float3 halfDirection = normalize(viewDirection + lightDirection); // has to be recalced here.
@@ -81,7 +86,7 @@ float3 AdditionalLightingShadingGradeMap(UtsLight additionalLight, float4 _MainT
     //v.2.0.5: If Added lights is directional, set 0 as _LightIntensity
     float _LightIntensity = lerp(0, (0.299*additionalLightColor.r + 0.587*additionalLightColor.g + 0.114*additionalLightColor.b), notDirectional);
     //v.2.0.5: Filtering the high intensity zone of PointLights
-    float3 Set_LightColor = lightColor;
+    float3 Set_LightColor = addPassLightColor; // = lightColor
     //
     float3 Set_BaseColor = lerp((_BaseColor.rgb*_MainTex_var.rgb*_LightIntensity), ((_BaseColor.rgb*_MainTex_var.rgb)*Set_LightColor), _Is_LightColor_Base);
     //v.2.0.5
@@ -108,19 +113,13 @@ float3 AdditionalLightingShadingGradeMap(UtsLight additionalLight, float4 _MainT
     float Set_ShadeShadowMask = saturate((1.0 + ((Set_ShadingGrade - (secondShadeColorStep - _2nd_ShadeColor_Feather)) * (0.0 - 1.0)) / (secondShadeColorStep - (secondShadeColorStep - _2nd_ShadeColor_Feather)))); // 1st and 2nd Shades Mask
 
     //Composition: 3 Basic Colors as finalColor
-    // float3 finalColor =
-    //     lerp(
-    //         Set_BaseColor,
-    //         //_BaseColor_var*(Set_LightColor*1.5),
-
-    //         lerp(
-    //             Set_1st_ShadeColor,
-    //             Set_2nd_ShadeColor,
-    //             Set_ShadeShadowMask
-    //         ),
-    //         Set_FinalShadowMask);
-    float3 finalColor = Set_BaseColor;
+    float3 finalShadeColor = lerp(Set_1st_ShadeColor, Set_2nd_ShadeColor, Set_ShadeShadowMask);
+    float3 finalColor = lerp(Set_BaseColor, finalShadeColor, Set_FinalShadowMask);
     //v.2.0.6: Add HighColor if _Is_Filter_HiCutPointLightColor is False
+
+#if _IS_CLIPPING_TRANSMODE && _USE_OIT  // CUSTOM (OIT Transmittance)
+    finalColor += AdditionalOITTransmittance(lightDirection, viewDirection, lerp(normalDir, normalDirection, _Is_NormalMapToBase), Set_BaseColor, Set_LightColor, worldPos, opacity, lightIndex);
+#endif
 
     float4 _Set_HighColorMask_var = tex2D(_Set_HighColorMask, TRANSFORM_TEX(Set_UV0, _Set_HighColorMask));
     float _Specular_var = 0.5*dot(halfDirection, lerp(normalDir, normalDirection, _Is_NormalMapToHighColor)) + 0.5; //  Specular                
@@ -133,14 +132,15 @@ float3 AdditionalLightingShadingGradeMap(UtsLight additionalLight, float4 _MainT
     finalColor = finalColor + lerp(lerp(_HighColor_var, (_HighColor_var*((1.0 - Set_FinalShadowMask) + (Set_FinalShadowMask*_TweakHighColorOnShadow))), _Is_UseTweakHighColorOnShadow), float3(0, 0, 0), _Is_Filter_HiCutPointLightColor);
 
     finalColor = SATURATE_IF_SDR(finalColor);
-    finalColor = lerp(finalColor, 0, Set_FinalShadowMask);
+    // finalColor = lerp(finalColor, 0, Set_FinalShadowMask);
 
-#if _IS_CLIPPING_TRANSMODE && _USE_OIT  // CUSTOM (OIT Transmittance)
-    finalColor += OITTransmittance(lightDirection, viewDirection, lerp(normalDir, normalDirection, _Is_NormalMapToBase), Set_BaseColor, Set_LightColor, worldPos, opacity);
+#if _USE_CHAR_SHADOW    // CUSTOM (Character Shadow)
+    half ssShadowAtten = GetCharAdditionalShadow(worldPos, Set_UV0, opacity, lightIndex);
+    finalColor = lerp(finalColor, 0, ssShadowAtten);
 #endif
 
 #if _USE_SSS    // CUSTOM (SSS)
-    finalColor += SubsurfaceScattering(lightDirection, viewDirection, lerp(normalDir, normalDirection, _Is_NormalMapToBase), Set_BaseColor, Set_LightColor);
+    // finalColor += SubsurfaceScattering(lightDirection, viewDirection, lerp(normalDir, normalDirection, _Is_NormalMapToBase), Set_BaseColor, Set_LightColor);
 #endif
     return finalColor;
 }

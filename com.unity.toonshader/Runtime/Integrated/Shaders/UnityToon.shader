@@ -1242,6 +1242,7 @@ Shader "Toon" {
             #pragma multi_compile _ _ADDITIONAL_LIGHT_SHADOWS
             #pragma multi_compile _ _SHADOWS_SOFT
             #pragma multi_compile _ _FORWARD_PLUS
+            #pragma multi_compile_fragment _ _LIGHT_COOKIES
 
             #pragma multi_compile _ _MIXED_LIGHTING_SUBTRACTIVE
             // -------------------------------------
@@ -1400,8 +1401,11 @@ Shader "Toon" {
 
             #pragma vertex CharShadowVertex
             #pragma fragment CharShadowFragment
+            #pragma shader_feature _CHAR_ADDITIONAL_LIGHT_SHADOW_0
+            #pragma shader_feature _CHAR_ADDITIONAL_LIGHT_SHADOW_1
+            #pragma shader_feature _CHAR_ADDITIONAL_LIGHT_SHADOW_2
 
-            #include "Packages/com.unity.toongraphics/CharacterShadowMap/CharacterShadowDepthPass.hlsl"
+            #include "Packages/com.unity.toongraphics/CharacterShadowMap/Shaders/CharacterShadowDepthPass.hlsl"
             ENDHLSL
         }
 
@@ -1429,7 +1433,7 @@ Shader "Toon" {
             #pragma vertex TransparentShadowVert
             #pragma fragment TransparentShadowFragment
 
-            #include "Packages/com.unity.toongraphics/CharacterShadowMap/TransparentShadowPass.hlsl"
+            #include "Packages/com.unity.toongraphics/CharacterShadowMap/Shaders/TransparentShadowPass.hlsl"
             ENDHLSL
         }
 
