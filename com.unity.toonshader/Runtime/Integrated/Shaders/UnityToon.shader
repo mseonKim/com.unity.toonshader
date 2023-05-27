@@ -1181,6 +1181,9 @@ Shader "Toon" {
             //V.2.0.4
             #pragma multi_compile _IS_OUTLINE_CLIPPING_NO _IS_OUTLINE_CLIPPING_YES
             #pragma multi_compile _OUTLINE_NML _OUTLINE_POS
+            // CUSTOM
+            #pragma multi_compile _ADDITIONAL_LIGHTS
+            #pragma multi_compile _FORWARD_PLUS
             // Outline is implemented in UniversalToonOutline.hlsl.
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
@@ -1510,6 +1513,8 @@ Shader "Toon" {
             // CUSTOM
             #pragma shader_feature _USE_OIT
             #pragma shader_feature _USE_OIT_OUTLINE
+            #pragma multi_compile _ADDITIONAL_LIGHTS
+            #pragma multi_compile _FORWARD_PLUS
             // Outline is implemented in UniversalToonOutline.hlsl.
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
