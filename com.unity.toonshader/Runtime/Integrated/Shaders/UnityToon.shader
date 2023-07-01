@@ -1422,8 +1422,8 @@ Shader "Toon" {
             ZWrite Off
             ZTest Off
             Cull Off
-            Blend One One, One One
-            BlendOp Max, Add
+            Blend One One
+            BlendOp Max
 
             HLSLPROGRAM
             // #pragma target 2.0
@@ -1437,6 +1437,35 @@ Shader "Toon" {
 
             #pragma vertex TransparentShadowVert
             #pragma fragment TransparentShadowFragment
+
+            #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl"
+            #include "Packages/com.unity.toongraphics/CharacterShadowMap/Shaders/TransparentShadowPass.hlsl"
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Name "TransparentAlphaSum"
+            Tags{"LightMode" = "TransparentAlphaSum"}
+
+            ZWrite Off
+            ZTest Off
+            Cull Off
+            Blend One One
+            BlendOp Add
+
+            HLSLPROGRAM
+            // #pragma target 2.0
+	    
+            // Required to compile gles 2.0 with standard srp library
+            // #pragma prefer_hlslcc gles
+            // #pragma exclude_renderers d3d11_9x
+            // #pragma shader_feature_local _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            // #pragma enable_d3d11_debug_symbols
+            #pragma shader_feature_local _ALPHATEST_ON
+
+            #pragma vertex TransparentShadowVert
+            #pragma fragment TransparentAlphaSumFragment
 
             #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl"
             #include "Packages/com.unity.toongraphics/CharacterShadowMap/Shaders/TransparentShadowPass.hlsl"
