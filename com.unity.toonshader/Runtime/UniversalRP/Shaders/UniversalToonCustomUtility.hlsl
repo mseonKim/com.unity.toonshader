@@ -2,6 +2,8 @@
 #define UNIVERSAL_TOON_CUSTOM_UTILITY_INCLUDED
 
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
+#include "Packages/com.unity.toongraphics/CharacterShadowMap/Shaders/CharacterShadowInput.hlsl"
+#include "Packages/com.unity.toongraphics/CharacterShadowMap/Shaders/CharacterShadowTransforms.hlsl"
 #include "Packages/com.unity.toongraphics/CharacterShadowMap/Shaders/DeclareCharacterShadowTexture.hlsl"
 
 // Required Uniforms:

@@ -189,22 +189,21 @@ half _Surface;
 
 
 // CUSTOM
-float _MinLightIntensity;
 float4 _SDF_Tex_ST;
 float4 _SDF_ShadowMask_Tex_ST;
-half _SDF_Offset;
 half4 _FaceForward;
 half4 _FaceUp;
+float _MinLightIntensity;
 float _SDF_BlurIntensity;
-half _SDF_Reverse;
+float _SDF_Offset;
+float _SDF_Reverse;
 float4 _Hair_Highlight_Tex_ST;
-float _HairHiUVOffset;
 float4 _HeadWorldPos;
 float4 _HeadUpWorldDir;
+half _HairHiUVOffset;
 half _SSS_Power;
 half _SSS_Scale;
 half _SSS_Normal_Distortion;
-/// CUSTOM END
 
 CBUFFER_END
 

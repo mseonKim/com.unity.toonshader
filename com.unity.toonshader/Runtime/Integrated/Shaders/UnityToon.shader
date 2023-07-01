@@ -481,6 +481,7 @@ Shader "Toon" {
         _SDF_Tex("SDF_Tex", 2D) = "white" {}    // Alpha: SDF_ShadowMask for shadow ray
         _SDF_Offset("SDF_Offset", Float) = 0.0
         _FaceForward("Face Forward Vector", Vector) = (0, 0, 1, 0)
+        _FaceUp("Face Up Vector", Vector) = (0, 1, 0, 0)
         _SDF_BlurIntensity("SDF Blur Intensity", Range(0.0, 0.02)) = 0.0001 // = 1.0 / Texture.size
         [ToggleUI] _SDF_Reverse("One Minus Texture Value", Float) = 0.0
         _Hair_Highlight_Tex("Hair Highlight Tex", 2D) = "white" {}
@@ -1408,6 +1409,7 @@ Shader "Toon" {
             #pragma shader_feature _CHAR_ADDITIONAL_LIGHT_SHADOW_1
             #pragma shader_feature _CHAR_ADDITIONAL_LIGHT_SHADOW_2
 
+            #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl"
             #include "Packages/com.unity.toongraphics/CharacterShadowMap/Shaders/CharacterShadowDepthPass.hlsl"
             ENDHLSL
         }
@@ -1436,6 +1438,7 @@ Shader "Toon" {
             #pragma vertex TransparentShadowVert
             #pragma fragment TransparentShadowFragment
 
+            #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl"
             #include "Packages/com.unity.toongraphics/CharacterShadowMap/Shaders/TransparentShadowPass.hlsl"
             ENDHLSL
         }
