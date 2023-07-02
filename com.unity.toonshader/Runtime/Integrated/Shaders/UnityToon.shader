@@ -1185,6 +1185,7 @@ Shader "Toon" {
             // CUSTOM
             #pragma multi_compile _ADDITIONAL_LIGHTS
             #pragma multi_compile _FORWARD_PLUS
+            #pragma shader_feature_local _ _USE_OIT _USE_OIT_OUTLINE
             // Outline is implemented in UniversalToonOutline.hlsl.
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
@@ -1273,11 +1274,12 @@ Shader "Toon" {
 
             // -----------------------
             // CUSTOM
-            #pragma shader_feature _USE_SDF
-            #pragma shader_feature _USE_CHAR_SHADOW
-            #pragma shader_feature _USE_ANISOTROPIC_HAIR
-            #pragma shader_feature _USE_OIT
-            #pragma shader_feature _USE_SSS
+            #pragma shader_feature_local _USE_SDF
+            #pragma shader_feature_local _USE_CHAR_SHADOW
+            #pragma shader_feature_local _USE_ANISOTROPIC_HAIR
+            #pragma shader_feature_local _USE_OIT
+            #pragma shader_feature_local _USE_SSS
+            #pragma multi_compile _HIGH_CHAR_SOFTSHADOW
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
