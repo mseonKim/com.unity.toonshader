@@ -127,29 +127,43 @@ Shader "Toon" {
         _Tweak_RimLightMaskLevel ("Tweak_RimLightMaskLevel", Range(-1, 1)) = 0
 //
         [Toggle(_)] _MatCap ("MatCap", Float ) = 0
+        [Toggle(_)] _MatCap2 ("MatCap2", Float ) = 0
         _MatCap_Sampler ("MatCap_Sampler", 2D) = "black" {}
         _MatCap_Sampler2 ("MatCap_Sampler2", 2D) = "black" {}
         //v.2.0.6
         _BlurLevelMatcap ("Blur Level of MatCap_Sampler", Range(0, 10)) = 0
+        _BlurLevelMatcap2 ("Blur Level of MatCap_Sampler2", Range(0, 10)) = 0
         _MatCapColor ("MatCapColor", Color) = (1,1,1,1)
         _MatCapColor2 ("MatCapColor2", Color) = (1,1,1,1)
         [Toggle(_)] _Is_LightColor_MatCap ("Is_LightColor_MatCap", Float ) = 1
         [Toggle(_)] _Is_BlendAddToMatCap ("Is_BlendAddToMatCap", Float ) = 1
+        [Toggle(_)] _Is_BlendAddToMatCap2 ("Is_BlendAddToMatCap2", Float ) = 1
         _Tweak_MatCapUV ("Tweak_MatCapUV", Range(-0.5, 0.5)) = 0
+        _Tweak_MatCap2UV ("Tweak_MatCap2UV", Range(-0.5, 0.5)) = 0
         _Rotate_MatCapUV ("Rotate_MatCapUV", Range(-1, 1)) = 0
+        _Rotate_MatCap2UV ("Rotate_MatCap2UV", Range(-1, 1)) = 0
         //v.2.0.6
         [Toggle(_)] _CameraRolling_Stabilizer ("Activate CameraRolling_Stabilizer", Float ) = 0
+        [Toggle(_)] _CameraRolling_Stabilizer2 ("Activate CameraRolling_Stabilizer2", Float ) = 0
         [Toggle(_)] _Is_NormalMapForMatCap ("Is_NormalMapForMatCap", Float ) = 0
+        [Toggle(_)] _Is_NormalMapForMatCap2 ("Is_NormalMapForMatCap2", Float ) = 0
         _NormalMapForMatCap ("NormalMapForMatCap", 2D) = "bump" {}
+        _NormalMapForMatCap2 ("NormalMapForMatCap2", 2D) = "bump" {}
         _BumpScaleMatcap ("Scale for NormalMapforMatCap", Range(0, 1)) = 1
+        _BumpScaleMatcap2 ("Scale for NormalMapforMatCap2", Range(0, 1)) = 1
         _Rotate_NormalMapForMatCapUV ("Rotate_NormalMapForMatCapUV", Range(-1, 1)) = 0
+        _Rotate_NormalMapForMatCap2UV ("Rotate_NormalMapForMatCap2UV", Range(-1, 1)) = 0
         [Toggle(_)] _Is_UseTweakMatCapOnShadow ("Is_UseTweakMatCapOnShadow", Float ) = 0
+        [Toggle(_)] _Is_UseTweakMatCap2OnShadow ("Is_UseTweakMatCap2OnShadow", Float ) = 0
         _TweakMatCapOnShadow ("TweakMatCapOnShadow", Range(0, 1)) = 0
+        _TweakMatCap2OnShadow ("TweakMatCap2OnShadow", Range(0, 1)) = 0
 //MatcapMask
         _Set_MatcapMask ("Set_MatcapMask", 2D) = "white" {}
         _Set_MatcapMask2 ("Set_MatcapMask2", 2D) = "white" {}
         _Tweak_MatcapMaskLevel ("Tweak_MatcapMaskLevel", Range(-1, 1)) = 0
+        _Tweak_Matcap2MaskLevel ("Tweak_Matcap2MaskLevel", Range(-1, 1)) = 0
         [Toggle(_)] _Inverse_MatcapMask ("Inverse_MatcapMask", Float ) = 0
+        [Toggle(_)] _Inverse_Matcap2Mask ("Inverse_Matcap2Mask", Float ) = 0
         //v.2.0.5
         [Toggle(_)] _Is_Ortho ("Orthographic Projection for MatCap", Float ) = 0
         //// Angel Rings

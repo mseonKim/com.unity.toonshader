@@ -212,6 +212,7 @@
                 if(_sign_Mirror < 0){
                     _Right_Axis = -1 * _Right_Axis;
                     _Rotate_MatCapUV = -1 * _Rotate_MatCapUV;
+                    _Rotate_MatCap2UV = -1 * _Rotate_MatCap2UV;
                 }else{
                     _Right_Axis = _Right_Axis;
                 }
@@ -243,13 +244,11 @@
 
                 float4 _MatCap_Sampler_var = tex2Dlod(_MatCap_Sampler, float4(TRANSFORM_TEX(_Rot_MatCapUV_var, _MatCap_Sampler), 0.0, _BlurLevelMatcap));
                 float4 _Set_MatcapMask_var = tex2D(_Set_MatcapMask, TRANSFORM_TEX(Set_UV0, _Set_MatcapMask));
-                float4 _MatCap_Sampler2_var = SAMPLE_TEXTURE2D(_MatCap_Sampler2, sampler_MainTex, TRANSFORM_TEX(_Rot_MatCapUV_var, _MatCap_Sampler2));
-                float4 _Set_MatcapMask2_var = SAMPLE_TEXTURE2D(_Set_MatcapMask2, sampler_MainTex, TRANSFORM_TEX(Set_UV0, _Set_MatcapMask2));
               //
                 //MatcapMask
                 float _Tweak_MatcapMaskLevel_var = saturate(lerp(_Set_MatcapMask_var.g, (1.0 - _Set_MatcapMask_var.g), _Inverse_MatcapMask) + _Tweak_MatcapMaskLevel);
                 //
-                float3 _Is_LightColor_MatCap_var = lerp( (_MatCap_Sampler_var.rgb*_MatCapColor.rgb), ((_MatCap_Sampler_var.rgb*_MatCapColor.rgb)*Set_LightColor), _Is_LightColor_MatCap );
+                float3 _Is_LightColor_MatCap_var = _MatCapColor.a * lerp( (_MatCap_Sampler_var.rgb*_MatCapColor.rgb), ((_MatCap_Sampler_var.rgb*_MatCapColor.rgb)*Set_LightColor), _Is_LightColor_MatCap );
                 //v.2.0.6 : ShadowMask on Matcap in Blend mode : multiply
                 float3 Set_MatCap = lerp( _Is_LightColor_MatCap_var, (_Is_LightColor_MatCap_var*((1.0 - Set_FinalShadowMask)+(Set_FinalShadowMask*_TweakMatCapOnShadow)) + lerp(Set_HighColor*Set_FinalShadowMask*(1.0-_TweakMatCapOnShadow), float3(0.0, 0.0, 0.0), _Is_BlendAddToMatCap)), _Is_UseTweakMatCapOnShadow );
 
@@ -262,17 +261,38 @@
                 float3 matCapColorFinal = lerp(matCapColorOnMultiplyMode, matCapColorOnAddMode, _Is_BlendAddToMatCap);
 
                 // CUSTOM - Matcap2
-                _Tweak_MatcapMaskLevel_var = saturate(lerp(_Set_MatcapMask2_var.g, (1.0 - _Set_MatcapMask2_var.g), _Inverse_MatcapMask) + _Tweak_MatcapMaskLevel);
-                if (_Tweak_MatcapMaskLevel_var > 0)
+                float3 matCap2ColorFinal = 0;
+                float _Rot_MatCap2UV_var_ang = (_Rotate_MatCap2UV*3.141592654) - _Camera_Dir*_Camera_Roll*_CameraRolling_Stabilizer2;
+                float2 _Rot_MatCap2NmUV_var = RotateUV(Set_UV0, (_Rotate_NormalMapForMatCap2UV*3.141592654), float2(0.5, 0.5), 1.0);
+                float3 _NormalMapForMatCap2_var = UnpackNormalScale(SAMPLE_TEXTURE2D(_NormalMapForMatCap2, sampler_MainTex, TRANSFORM_TEX(_Rot_MatCap2NmUV_var, _NormalMapForMatCap2)), _BumpScaleMatcap2);
+                viewNormal = (mul(UNITY_MATRIX_V, float4(lerp( i.normalDir, mul( _NormalMapForMatCap2_var.rgb, tangentTransform ).rgb, _Is_NormalMapForMatCap2 ),0))).rgb;
+                NormalBlend_MatcapUV_Detail = viewNormal.rgb * float3(-1,-1,1);
+                NormalBlend_MatcapUV_Base = (mul( UNITY_MATRIX_V, float4(viewDirection,0) ).rgb*float3(-1,-1,1)) + float3(0,0,1);
+                noSknewViewNormal = NormalBlend_MatcapUV_Base*dot(NormalBlend_MatcapUV_Base, NormalBlend_MatcapUV_Detail)/NormalBlend_MatcapUV_Base.b - NormalBlend_MatcapUV_Detail;                
+                float2 _ViewNormalAsMatCap2UV = (lerp(noSknewViewNormal,viewNormal,_Is_Ortho).rg*0.5)+0.5;
+                float2 _Rot_MatCap2UV_var = RotateUV((0.0 + ((_ViewNormalAsMatCap2UV - (0.0+_Tweak_MatCap2UV)) * (1.0 - 0.0) ) / ((1.0-_Tweak_MatCap2UV) - (0.0+_Tweak_MatCap2UV))), _Rot_MatCap2UV_var_ang, float2(0.5, 0.5), 1.0);
+                //If it is "inside the mirror", flip the UV left and right.
+                if(_sign_Mirror < 0){
+                    _Rot_MatCap2UV_var.x = 1-_Rot_MatCap2UV_var.x;
+                }else{
+                    _Rot_MatCap2UV_var = _Rot_MatCap2UV_var;
+                }
+
+                float4 _MatCap_Sampler2_var = SAMPLE_TEXTURE2D(_MatCap_Sampler2, sampler_MainTex, TRANSFORM_TEX(_Rot_MatCap2UV_var, _MatCap_Sampler2));
+                float4 _Set_MatcapMask2_var = SAMPLE_TEXTURE2D(_Set_MatcapMask2, sampler_MainTex, TRANSFORM_TEX(Set_UV0, _Set_MatcapMask2));
+
+                float _Tweak_Matcap2MaskLevel_var = saturate(lerp(_Set_MatcapMask2_var.g, (1.0 - _Set_MatcapMask2_var.g), _Inverse_Matcap2Mask) + _Tweak_Matcap2MaskLevel);
+                if (_Tweak_Matcap2MaskLevel_var > 0)
                 {
-                    _Is_LightColor_MatCap_var = lerp( (_MatCap_Sampler2_var.rgb*_MatCapColor2.rgb), ((_MatCap_Sampler2_var.rgb*_MatCapColor2.rgb)*Set_LightColor), _Is_LightColor_MatCap );
-                    Set_MatCap = lerp( _Is_LightColor_MatCap_var, (_Is_LightColor_MatCap_var*((1.0 - Set_FinalShadowMask)+(Set_FinalShadowMask*_TweakMatCapOnShadow)) + lerp(Set_HighColor*Set_FinalShadowMask*(1.0-_TweakMatCapOnShadow), float3(0.0, 0.0, 0.0), _Is_BlendAddToMatCap)), _Is_UseTweakMatCapOnShadow );
-                    matCapColorOnAddMode = _RimLight_var+Set_MatCap*_Tweak_MatcapMaskLevel_var;
-                    _Tweak_MatcapMaskLevel_var_MultiplyMode = _Tweak_MatcapMaskLevel_var * lerp (1.0, (1.0 - (Set_FinalShadowMask)*(1.0 - _TweakMatCapOnShadow)), _Is_UseTweakMatCapOnShadow);
+                    _Is_LightColor_MatCap_var = _MatCapColor2.a * lerp( (_MatCap_Sampler2_var.rgb*_MatCapColor2.rgb), ((_MatCap_Sampler2_var.rgb*_MatCapColor2.rgb)*Set_LightColor), _Is_LightColor_MatCap );
+                    Set_MatCap = lerp( _Is_LightColor_MatCap_var, (_Is_LightColor_MatCap_var*((1.0 - Set_FinalShadowMask)+(Set_FinalShadowMask*_TweakMatCap2OnShadow)) + lerp(Set_HighColor*Set_FinalShadowMask*(1.0-_TweakMatCap2OnShadow), float3(0.0, 0.0, 0.0), _Is_BlendAddToMatCap2)), _Is_UseTweakMatCap2OnShadow );
+                    matCapColorOnAddMode = _RimLight_var+Set_MatCap*_Tweak_Matcap2MaskLevel_var;
+                    _Tweak_MatcapMaskLevel_var_MultiplyMode = _Tweak_Matcap2MaskLevel_var * lerp (1.0, (1.0 - (Set_FinalShadowMask)*(1.0 - _TweakMatCap2OnShadow)), _Is_UseTweakMatCap2OnShadow);
                     matCapColorOnMultiplyMode = Set_HighColor*(1-_Tweak_MatcapMaskLevel_var_MultiplyMode) + Set_HighColor*Set_MatCap*_Tweak_MatcapMaskLevel_var_MultiplyMode + lerp(float3(0,0,0),Set_RimLight,_RimLight);
-                    matCapColorFinal = lerp(matCapColorOnMultiplyMode, matCapColorOnAddMode, _Is_BlendAddToMatCap);
+                    matCap2ColorFinal = lerp(matCapColorOnMultiplyMode, matCapColorOnAddMode, _Is_BlendAddToMatCap2);
                 }
                 float3 finalColor = lerp(_RimLight_var, matCapColorFinal, _MatCap);// Final Composition before Emissive
+                finalColor += lerp(0, matCap2ColorFinal, _MatCap2);
 
                 // CUSTOM (Anisotropic Hair)
 #if _USE_ANISOTROPIC_HAIR

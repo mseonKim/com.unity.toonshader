@@ -103,6 +103,7 @@ namespace UnityEditor.Rendering.Toon
         internal const string ShaderPropAngelRing = "_AngelRing";
         internal const string ShaderPropRTHS = "_RTHS";
         internal const string ShaderPropMatCap = "_MatCap";
+        internal const string ShaderPropMatCap2 = "_MatCap2";
         internal const string ShaderPropMainTex = "_MainTex";
         internal const string ShaderPropClippingMode = "_ClippingMode";
         internal const string ShaderPropClippingMask = "_ClippingMask";
@@ -143,6 +144,7 @@ namespace UnityEditor.Rendering.Toon
         internal const string ShaderPropIsBaseMapAlphaAsClippingMask = "_IsBaseMapAlphaAsClippingMask";
         internal const string ShaderPropIsLightColor_Base = "_Is_LightColor_Base";
         internal const string ShaderPropCameraRolling_Stabilizer = "_CameraRolling_Stabilizer";
+        internal const string ShaderPropCameraRolling_Stabilizer2 = "_CameraRolling_Stabilizer2";
         internal const string ShaderPropIs_Ortho = "_Is_Ortho";
         internal const string ShaderPropGI_Intensity = "_GI_Intensity";
         internal const string ShaderPropUnlit_Intensity = "_Unlit_Intensity";
@@ -158,6 +160,7 @@ namespace UnityEditor.Rendering.Toon
         internal const string ShaderPropIs_LightColor_AR = "_Is_LightColor_AR";
         internal const string ShaderPropIs_LightColor_Outline = "_Is_LightColor_Outline";
         internal const string ShaderPropInvert_MatcapMask = "_Inverse_MatcapMask";
+        internal const string ShaderPropInvert_Matcap2Mask = "_Inverse_Matcap2Mask";
         internal const string ShaderPropUse_BaseAs1st = "_Use_BaseAs1st";
         internal const string ShaderPropUse_1stAs2nd = "_Use_1stAs2nd";
         internal const string ShaderPropIs_NormalMapToBase = "_Is_NormalMapToBase";
@@ -166,6 +169,7 @@ namespace UnityEditor.Rendering.Toon
         internal const string ShaderPropRimLight_FeatherOff = "_RimLight_FeatherOff";
         internal const string ShaderPropAp_RimLight_FeatherOff = "_Ap_RimLight_FeatherOff";
         internal const string ShaderPropIs_BlendAddToMatCap = "_Is_BlendAddToMatCap";
+        internal const string ShaderPropIs_BlendAddToMatCap2 = "_Is_BlendAddToMatCap2";
         internal const string ShaderPropARSampler_AlphaOn = "_ARSampler_AlphaOn";
         internal const string ShaderPropIs_UseTweakHighColorOnShadow = "_Is_UseTweakHighColorOnShadow";
 
@@ -184,7 +188,9 @@ namespace UnityEditor.Rendering.Toon
         internal const string ShaderProp2nd_ShadeColor_Feather = "_2nd_ShadeColor_Feather";
         internal const string ShaderProp1st2nd_Shades_Feather = "_1st2nd_Shades_Feather";
         internal const string ShaderPropIs_NormalMapForMatCap = "_Is_NormalMapForMatCap";
+        internal const string ShaderPropIs_NormalMapForMatCap2 = "_Is_NormalMapForMatCap2";
         internal const string ShaderPropIs_UseTweakMatCapOnShadow = "_Is_UseTweakMatCapOnShadow";
+        internal const string ShaderPropIs_UseTweakMatCap2OnShadow = "_Is_UseTweakMatCap2OnShadow";
         internal const string ShaderPropIs_ViewCoord_Scroll = "_Is_ViewCoord_Scroll";
         internal const string ShaderPropIs_PingPong_Base = "_Is_PingPong_Base";
 
@@ -377,6 +383,7 @@ namespace UnityEditor.Rendering.Toon
         protected MaterialProperty specularBlendMode = null;
         protected MaterialProperty matcapCameraMode = null;
         protected MaterialProperty matcapBlendMode = null;
+        protected MaterialProperty matcap2BlendMode = null;
         protected MaterialProperty matcapOrtho = null;
         protected MaterialProperty transparentMode = null;
         protected MaterialProperty clippingMode = null;
@@ -414,7 +421,9 @@ namespace UnityEditor.Rendering.Toon
         protected MaterialProperty matCapColor = null;
         protected MaterialProperty matCapColor2 = null;
         protected MaterialProperty normalMapForMatCap = null;
+        protected MaterialProperty normalMapForMatCap2 = null;
         protected MaterialProperty bumpScaleMatcap = null;
+        protected MaterialProperty bumpScaleMatcap2 = null;
         protected MaterialProperty set_MatcapMask = null;
         protected MaterialProperty set_MatcapMask2 = null;
 
@@ -478,6 +487,7 @@ namespace UnityEditor.Rendering.Toon
             specularMode = FindProperty(ShaderPropIs_SpecularToHighColor, props);
             specularBlendMode = FindProperty(ShaderPropIs_BlendAddToHiColor, props);
             matcapBlendMode = FindProperty(ShaderPropIs_BlendAddToMatCap, props);
+            matcap2BlendMode = FindProperty(ShaderPropIs_BlendAddToMatCap2, props);
             matcapCameraMode = FindProperty(ShaderPropIs_Ortho, props);
             transparentMode = FindProperty(ShaderPropTransparentEnabled, props);
             clippingMask = FindProperty(ShaderPropClippingMask, props);
@@ -514,7 +524,9 @@ namespace UnityEditor.Rendering.Toon
             matCapColor2 = FindProperty("_MatCapColor2", props);                // CUSTOM
 
             normalMapForMatCap = FindProperty("_NormalMapForMatCap", props);
+            normalMapForMatCap2 = FindProperty("_NormalMapForMatCap2", props);
             bumpScaleMatcap = FindProperty("_BumpScaleMatcap", props);
+            bumpScaleMatcap2 = FindProperty("_BumpScaleMatcap2", props);
 
 
             set_MatcapMask = FindProperty(ShaderProp_Set_MatcapMask, props);
@@ -639,9 +651,7 @@ namespace UnityEditor.Rendering.Toon
             public static readonly GUIContent highColorMaskText = new GUIContent("Highlight Mask", "A grayscale texture which utilises its brightness to control intensity.");
             public static readonly GUIContent rimLightMaskText = new GUIContent("Rim Light Mask", "Rim Light Mask : Texture(linear). The white part of the texture is displayed as Rim Light, and the black part is masked and not displayed.");
             public static readonly GUIContent matCapSamplerText = new GUIContent("MatCap Map", "MatCap Color : Texture(sRGB) × Color(RGB) Default:White");
-            public static readonly GUIContent matCapSampler2Text = new GUIContent("MatCap Map2", "MatCap Color : Texture(sRGB) × Color(RGB) Default:White");
             public static readonly GUIContent matCapMaskText = new GUIContent("MatCap Mask", "The MatCap mask is positioned with respect to the UV coordinates of the mesh onto which the MatCap is projected, and the pixels on black areas are hidden.");
-            public static readonly GUIContent matCapMask2Text = new GUIContent("MatCap Mask2", "The MatCap mask is positioned with respect to the UV coordinates of the mesh onto which the MatCap is projected, and the pixels on black areas are hidden.");
             public static readonly GUIContent angelRingText = new GUIContent("Angel Ring", "Angel Ring : Texture(sRGB) × Color(RGB) Default:Black.");
             public static readonly GUIContent emissiveTexText = new GUIContent("Emission Map", "Primarily used with the Bloom Post Effect, Luminous objects can be represented.");
             public static readonly GUIContent shadingGradeMapText = new GUIContent("Shading Grade Map", "Specify shadow-prone areas in UV coordinates. Shading Grade Map : Texture(linear)");
@@ -697,6 +707,7 @@ namespace UnityEditor.Rendering.Toon
             public static readonly GUIContent camearRollingStabilizerText = new GUIContent("Stabilize Camera rolling", "Stabilize Camera rolling when capturing materials with camera.");
             public static readonly GUIContent invertedRimlightFeatherText = new GUIContent("Inverted Rim Light Feather Off", "Disable Inverted Rim light feather.");
             public static readonly GUIContent matCapText = new GUIContent("MatCap", "Enable/Disable MatCap (Material Capture)");
+            public static readonly GUIContent matCap2Text = new GUIContent("MatCap2", "Enable/Disable MatCap2 (Material Capture)");
             public static readonly GUIContent matCapNormalmapSpecularaMask = new GUIContent("Normal Map Specular Mask for MatCap", "If Enabled, gives a normal map specifically for MatCap.If you are using MatCap as speculum lighting, you can use this to mask it.");
             public static readonly GUIContent matCapOnShadow = new GUIContent("MatCap Blending on Shadows", "Enables the blending rate of the MatCap range in shadows.");
             public static readonly GUIContent invertMatCapMaskText = new GUIContent("Invert MatCap Mask","When enabled, MatCap Mask Texture is inverted.");
@@ -757,6 +768,9 @@ namespace UnityEditor.Rendering.Toon
             public static readonly RangeProperty tweakMatCapOnShadowText = new RangeProperty(
                 label: "Blending Level", tooltip: "Adjusts the intensity of MatCap applied to shadow areas.",
                 propName: "_TweakMatCapOnShadow", defaultValue: 0.0f, min: 0, max: 1);
+            public static readonly RangeProperty tweakMatCap2OnShadowText = new RangeProperty(
+                label: "Blending Level", tooltip: "Adjusts the intensity of MatCap applied to shadow areas.",
+                propName: "_TweakMatCap2OnShadow", defaultValue: 0.0f, min: 0, max: 1);
             public static readonly RangeProperty tweakSystemShadowLevelText = new RangeProperty(
                 label: "System Shadow Level", tooltip: "Define the appearance of self-shadows and other received shadows that blend with the toon shader.",
                 propName: "_Tweak_SystemShadowsLevel", defaultValue: 0.0f, min: -0.5f, max: 0.5f);
@@ -818,13 +832,25 @@ namespace UnityEditor.Rendering.Toon
                 label: "Scale MatCap UV", tooltip: "Scaling UV of MatCap Map.",
                 propName: "_Tweak_MatCapUV", defaultValue: 0, min: -0.5f, max: 0.5f);
 
+            public static readonly RangeProperty tweakMatCap2UVText = new RangeProperty(
+                label: "Scale MatCap UV", tooltip: "Scaling UV of MatCap Map.",
+                propName: "_Tweak_MatCap2UV", defaultValue: 0, min: -0.5f, max: 0.5f);
+
             public static readonly RangeProperty rotateMatCapUVText = new RangeProperty(
                 label: "Rotate MatCap UV", tooltip: "Rotating UV of MatCap Map.",
                 propName: "_Rotate_MatCapUV", defaultValue: 0, min: -1, max: 1);
 
+            public static readonly RangeProperty rotateMatCap2UVText = new RangeProperty(
+                label: "Rotate MatCap UV", tooltip: "Rotating UV of MatCap Map.",
+                propName: "_Rotate_MatCap2UV", defaultValue: 0, min: -1, max: 1);
+
             public static readonly RangeProperty matcapBlurLevelText = new RangeProperty(
                 label: "MatCap Blur Level", tooltip: "Blur MatCap Map using the Mip Map feature; to enable Mip Map, turn on Advanced > Generate Mip Maps in the Texture Import Settings. Default is 0 (no blur).",
                 propName: "_BlurLevelMatcap", defaultValue: 0, min: 0, max: 10);
+
+            public static readonly RangeProperty matcap2BlurLevelText = new RangeProperty(
+                label: "MatCap Blur Level", tooltip: "Blur MatCap Map using the Mip Map feature; to enable Mip Map, turn on Advanced > Generate Mip Maps in the Texture Import Settings. Default is 0 (no blur).",
+                propName: "_BlurLevelMatcap2", defaultValue: 0, min: 0, max: 10);
 
             public static readonly RangeProperty arOffsetU_Text = new RangeProperty(
                 label: "Offset U", tooltip: "Adjusts the Angel Ring's shape in the horizontal direction.",
@@ -862,9 +888,17 @@ namespace UnityEditor.Rendering.Toon
                 label: "MatCap Mask Level", "Adjusts the level of the MatCap Mask. When the value is 1, MatCap is displayed 100% irrespective of whether or not there is a mask. When the value is -1, MatCap will not be displayed at all and MatCap will be the same as in the off state.",
                 propName: "_Tweak_MatcapMaskLevel",defaultValue:0.0f, min: -1, max: 1);
 
+            public static readonly RangeProperty tweakMatCap2MaskLevelText = new RangeProperty(
+                label: "MatCap Mask Level", "Adjusts the level of the MatCap Mask. When the value is 1, MatCap is displayed 100% irrespective of whether or not there is a mask. When the value is -1, MatCap will not be displayed at all and MatCap will be the same as in the off state.",
+                propName: "_Tweak_Matcap2MaskLevel",defaultValue:0.0f, min: -1, max: 1);
+
             public static readonly RangeProperty rotate_NormalMapForMatCapUVText = new RangeProperty(
                 label: "Rotate Normal Map UV", "Rotates the MatCap normal map UV based on its center.",
                 propName: "_Rotate_NormalMapForMatCapUV", defaultValue: 0.0f, min: -1, max: 1);
+
+            public static readonly RangeProperty rotate_NormalMapForMatCap2UVText = new RangeProperty(
+                label: "Rotate Normal Map UV", "Rotates the MatCap normal map UV based on its center.",
+                propName: "_Rotate_NormalMapForMatCap2UV", defaultValue: 0.0f, min: -1, max: 1);
 
             public static readonly RangeProperty rimLight_InsideMaskText = new RangeProperty(
                 label: "Adjust Rim Light Area", "Increasing this value narrows the area of influence of Rim Light.",
@@ -1804,14 +1838,11 @@ namespace UnityEditor.Rendering.Toon
             var matcapEnabled = GUI_Toggle(material, Styles.matCapText, ShaderPropMatCap,MaterialGetInt(material, ShaderPropMatCap) != 0);
             EditorGUILayout.EndHorizontal();
             EditorGUI.BeginDisabledGroup(!matcapEnabled);
+            DoPopup(Styles.matcapOrthoText, matcapCameraMode, System.Enum.GetNames(typeof(CameraProjectionType)));            
 
             m_MaterialEditor.TexturePropertySingleLine(Styles.matCapSamplerText, matCap_Sampler, matCapColor);
             EditorGUI.indentLevel++;
             m_MaterialEditor.TextureScaleOffsetProperty(matCap_Sampler);
-            EditorGUI.indentLevel--;
-            m_MaterialEditor.TexturePropertySingleLine(Styles.matCapSampler2Text, matCap_Sampler2, matCapColor2);
-            EditorGUI.indentLevel++;
-            m_MaterialEditor.TextureScaleOffsetProperty(matCap_Sampler2);
 
             if (!_SimpleUI)
             {
@@ -1855,7 +1886,6 @@ namespace UnityEditor.Rendering.Toon
                     EditorGUI.indentLevel--;
                 }
                 EditorGUI.EndDisabledGroup();
-                DoPopup(Styles.matcapOrthoText, matcapCameraMode, System.Enum.GetNames(typeof(CameraProjectionType)));
             }
 
             EditorGUILayout.Space();
@@ -1865,8 +1895,6 @@ namespace UnityEditor.Rendering.Toon
             EditorGUILayout.LabelField("MatCap Mask", EditorStyles.boldLabel);
             m_MaterialEditor.TexturePropertySingleLine(Styles.matCapMaskText, set_MatcapMask);
             m_MaterialEditor.TextureScaleOffsetProperty(set_MatcapMask);
-            m_MaterialEditor.TexturePropertySingleLine(Styles.matCapMask2Text, set_MatcapMask2);
-            m_MaterialEditor.TextureScaleOffsetProperty(set_MatcapMask2);
             GUI_RangeProperty(material, Styles.tweakMatCapMaskLevelText);
 
             GUI_Toggle(material, Styles.invertMatCapMaskText, ShaderPropInvert_MatcapMask, MaterialGetInt(material, ShaderPropInvert_MatcapMask) != 0);
@@ -1874,6 +1902,65 @@ namespace UnityEditor.Rendering.Toon
 
             EditorGUI.indentLevel--;
 
+            EditorGUI.EndDisabledGroup();
+
+            // Matcap2
+            var matcap2Enabled = GUI_Toggle(material, Styles.matCap2Text, ShaderPropMatCap2,MaterialGetInt(material, ShaderPropMatCap2) != 0);
+            EditorGUI.BeginDisabledGroup(!matcap2Enabled);
+            if (EditorGUILayout.BeginFadeGroup(matcap2Enabled ? 1f : 0f))
+            {
+                m_MaterialEditor.TexturePropertySingleLine(Styles.matCapSamplerText, matCap_Sampler2, matCapColor2);
+                EditorGUI.indentLevel++;
+                m_MaterialEditor.TextureScaleOffsetProperty(matCap_Sampler2);
+
+                if (!_SimpleUI)
+                {
+                    GUI_RangeProperty(material, Styles.matcap2BlurLevelText);
+                    EditorGUILayout.BeginHorizontal();
+                    DoPopup(Styles.matcapBlendModeText, matcap2BlendMode, System.Enum.GetNames(typeof(UTS_MatcapColorBlendMode)));
+                    EditorGUILayout.EndHorizontal();
+
+                    GUI_RangeProperty(material, Styles.tweakMatCap2UVText);
+                    GUI_RangeProperty(material, Styles.rotateMatCap2UVText);
+
+                    EditorGUILayout.BeginHorizontal();
+                    GUI_Toggle(material, Styles.camearRollingStabilizerText, ShaderPropCameraRolling_Stabilizer2, MaterialGetInt(material, ShaderPropCameraRolling_Stabilizer2) != 0);
+                    EditorGUILayout.EndHorizontal();
+
+                    EditorGUILayout.BeginHorizontal();
+                    var isNormalMapForMatCap2 = GUI_Toggle(material, Styles.matCapNormalmapSpecularaMask, ShaderPropIs_NormalMapForMatCap2, MaterialGetInt(material, ShaderPropIs_NormalMapForMatCap2) != 0);
+
+                    EditorGUILayout.EndHorizontal();
+                    EditorGUI.BeginDisabledGroup(!isNormalMapForMatCap2);
+                    {
+                        EditorGUI.indentLevel++;
+                        m_MaterialEditor.TexturePropertySingleLine(Styles.normalMapText, normalMapForMatCap2, bumpScaleMatcap2);
+                        m_MaterialEditor.TextureScaleOffsetProperty(normalMapForMatCap2);
+                        GUI_RangeProperty(material, Styles.rotate_NormalMapForMatCap2UVText);
+                        EditorGUI.indentLevel--;
+                    }
+                    EditorGUI.EndDisabledGroup();
+
+                    EditorGUILayout.BeginHorizontal();
+                    var tweakMatCap2OnShadows = GUI_Toggle(material, Styles.matCapOnShadow, ShaderPropIs_UseTweakMatCap2OnShadow, MaterialGetInt(material, ShaderPropIs_UseTweakMatCap2OnShadow) != 0);
+    
+                    EditorGUILayout.EndHorizontal();
+                    EditorGUI.BeginDisabledGroup(!tweakMatCap2OnShadows);
+                    {
+                        EditorGUI.indentLevel++;
+                        GUI_RangeProperty(material, Styles.tweakMatCap2OnShadowText);
+                        EditorGUI.indentLevel--;
+                    }
+                    EditorGUI.EndDisabledGroup();
+                }
+                EditorGUILayout.LabelField("MatCap2 Mask", EditorStyles.boldLabel);
+                m_MaterialEditor.TexturePropertySingleLine(Styles.matCapMaskText, set_MatcapMask2);
+                m_MaterialEditor.TextureScaleOffsetProperty(set_MatcapMask2);
+                GUI_RangeProperty(material, Styles.tweakMatCap2MaskLevelText);
+                GUI_Toggle(material, Styles.invertMatCapMaskText, ShaderPropInvert_Matcap2Mask, MaterialGetInt(material, ShaderPropInvert_Matcap2Mask) != 0);
+                EditorGUI.indentLevel--;
+            }
+            EditorGUILayout.EndFadeGroup();
             EditorGUI.EndDisabledGroup();
 
 

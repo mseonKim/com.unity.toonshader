@@ -78,6 +78,7 @@ fixed _Ap_RimLight_FeatherOff;
 float4 _Set_RimLightMask_ST;
 float _Tweak_RimLightMaskLevel;
 fixed _MatCap;
+fixed _MatCap2;
 
 float4 _MatCap_Sampler_ST;
 float4 _MatCap_Sampler2_ST;
@@ -86,27 +87,40 @@ float4 _MatCapColor;
 float4 _MatCapColor2;
 fixed _Is_LightColor_MatCap;
 fixed _Is_BlendAddToMatCap;
+fixed _Is_BlendAddToMatCap2;
 float _Tweak_MatCapUV;
+float _Tweak_MatCap2UV;
 float _Rotate_MatCapUV;
+float _Rotate_MatCap2UV;
 fixed _Is_NormalMapForMatCap;
+fixed _Is_NormalMapForMatCap2;
 
 float4 _NormalMapForMatCap_ST;
+float4 _NormalMapForMatCap2_ST;
 float _Rotate_NormalMapForMatCapUV;
+float _Rotate_NormalMapForMatCap2UV;
 fixed _Is_UseTweakMatCapOnShadow;
+fixed _Is_UseTweakMatCap2OnShadow;
 float _TweakMatCapOnShadow;
+float _TweakMatCap2OnShadow;
 //MatcapMask
 // 
 float4 _Set_MatcapMask_ST;
 float4 _Set_MatcapMask2_ST;
 float _Tweak_MatcapMaskLevel;
+float _Tweak_Matcap2MaskLevel;
 
 fixed _Is_Ortho;
 
 float _CameraRolling_Stabilizer;
+float _CameraRolling_Stabilizer2;
 fixed _BlurLevelMatcap;
+fixed _BlurLevelMatcap2;
 fixed _Inverse_MatcapMask;
+fixed _Inverse_Matcap2Mask;
 
 float _BumpScaleMatcap;
+float _BumpScaleMatcap2;
 
 float4 _Emissive_Tex_ST;
 float4 _Emissive_Color;
@@ -226,6 +240,7 @@ sampler2D _Set_RimLightMask;
 sampler2D _MatCap_Sampler;
 TEXTURE2D(_MatCap_Sampler2);
 sampler2D _NormalMapForMatCap;
+TEXTURE2D(_NormalMapForMatCap2);
 sampler2D _Set_MatcapMask;
 TEXTURE2D(_Set_MatcapMask2);
 sampler2D _Emissive_Tex;
