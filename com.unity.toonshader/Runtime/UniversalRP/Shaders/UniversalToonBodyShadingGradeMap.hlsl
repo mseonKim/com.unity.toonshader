@@ -251,8 +251,6 @@
 
                 float4 _MatCap_Sampler_var = tex2Dlod(_MatCap_Sampler, float4(TRANSFORM_TEX(_Rot_MatCapUV_var, _MatCap_Sampler), 0.0, _BlurLevelMatcap));
                 float4 _Set_MatcapMask_var = tex2D(_Set_MatcapMask, TRANSFORM_TEX(Set_UV0, _Set_MatcapMask));
-                float4 _MatCap_Sampler2_var = SAMPLE_TEXTURE2D(_MatCap_Sampler2, sampler_MainTex, TRANSFORM_TEX(_Rot_MatCapUV_var, _MatCap_Sampler2));
-                float4 _Set_MatcapMask2_var = SAMPLE_TEXTURE2D(_Set_MatcapMask2, sampler_MainTex, TRANSFORM_TEX(Set_UV0, _Set_MatcapMask2));
 
                 //                
                 //MatcapMask
