@@ -76,6 +76,10 @@ half GetCharMainShadow(float3 worldPos, float2 uv, float opacity)
         return 0.0;
     }
 #endif
+
+    if (IfCharShadowCulled(TransformWorldToView(worldPos).z))
+        return 0;
+
     float4 clipPos = CharShadowWorldToHClip(worldPos);
 #if UNITY_REVERSED_Z
     clipPos.z = min(clipPos.z, UNITY_NEAR_CLIP_VALUE);
@@ -97,6 +101,10 @@ half GetCharAdditionalShadow(float3 worldPos, float2 uv, float opacity, uint lig
 #ifndef USE_FORWARD_PLUS
     return 0;
 #endif
+
+    if (IfCharShadowCulled(TransformWorldToView(worldPos).z))
+        return 0;
+
     uint i = LocalLightIndexToShadowmapIndex(lightIndex);
     if (i >= MAX_CHAR_SHADOWMAPS)
         return 0;
