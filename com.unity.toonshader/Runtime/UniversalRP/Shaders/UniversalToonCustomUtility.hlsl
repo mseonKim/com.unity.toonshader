@@ -77,50 +77,13 @@ half GetCharMainShadow(float3 worldPos, float2 uv, float opacity)
     }
 #endif
 
-    if (IfCharShadowCulled(TransformWorldToView(worldPos).z))
-        return 0;
-
-    float4 clipPos = CharShadowWorldToHClip(worldPos);
-#if UNITY_REVERSED_Z
-    clipPos.z = min(clipPos.z, UNITY_NEAR_CLIP_VALUE);
-#else
-    clipPos.z = max(clipPos.z, UNITY_NEAR_CLIP_VALUE);
-#endif
-    float3 ndc = clipPos.xyz / clipPos.w;
-    float2 ssUV = ndc.xy * 0.5 + 0.5;
-#if UNITY_UV_STARTS_AT_TOP
-    ssUV.y = 1.0 - ssUV.y;
-#endif
-
     // Max(Shadowmap, TransparentShadowmap)
-    return GetCharacterAndTransparentShadowmap(ssUV, ndc.z, opacity);
+    return SampleCharacterAndTransparentShadow(worldPos, opacity);
 }
 
-half GetCharAdditionalShadow(float3 worldPos, float2 uv, float opacity, uint lightIndex = 0)
+half GetCharAdditionalShadow(float3 worldPos, float opacity, uint lightIndex)
 {
-#ifndef USE_FORWARD_PLUS
-    return 0;
-#endif
-
-    if (IfCharShadowCulled(TransformWorldToView(worldPos).z))
-        return 0;
-
-    uint i = LocalLightIndexToShadowmapIndex(lightIndex);
-    if (i >= MAX_CHAR_SHADOWMAPS)
-        return 0;
-
-    float4 clipPos = CharShadowWorldToHClip(worldPos, i);
-#if UNITY_REVERSED_Z
-    clipPos.z = min(clipPos.z, UNITY_NEAR_CLIP_VALUE);
-#else
-    clipPos.z = max(clipPos.z, UNITY_NEAR_CLIP_VALUE);
-#endif
-    float3 ndc = clipPos.xyz / clipPos.w;
-    float2 ssUV = ndc.xy * 0.5 + 0.5;
-#if UNITY_UV_STARTS_AT_TOP
-    ssUV.y = 1.0 - ssUV.y;
-#endif
-    return GetCharacterAndTransparentShadowmap(ssUV, ndc.z, opacity, i);
+    return SampleAdditionalCharacterAndTransparentShadow(worldPos, opacity, lightIndex);
 }
 
 
@@ -147,12 +110,7 @@ half3 AnisotropicHairHighlight(float3 viewDirection, float2 uv, float3 worldPos)
 
 half3 OITTransmittance(float3 lightDir, float3 viewDir, float3 normal, half3 diffuse, half3 lightColor, float3 worldPos, float opacity)
 {
-    float4 clipPos = CharShadowWorldToHClip(worldPos);
-    float3 ndc = clipPos.xyz / clipPos.w;
-    float2 ssUV = ndc.xy * 0.5 + 0.5;
-#if UNITY_UV_STARTS_AT_TOP
-    ssUV.y = 1.0 - ssUV.y;
-#endif
+    float2 ssUV = TransformWorldToCharShadowCoord(worldPos).xy;
 
     float NoL = saturate(dot(-lightDir, normal));
     NoL = LinearStep(0.49, 0.51, NoL);
@@ -170,16 +128,10 @@ half3 AdditionalOITTransmittance(float3 lightDir, float3 viewDir, float3 normal,
 #ifndef USE_FORWARD_PLUS
     return 0;
 #endif
-    uint i = LocalLightIndexToShadowmapIndex(lightIndex);
-    if (i >= MAX_CHAR_SHADOWMAPS)
-        return 0;
+    uint i;
+    ADDITIONAL_CHARSHADOW_CHECK(i, lightIndex)
 
-    float4 clipPos = CharShadowWorldToHClip(worldPos, i);
-    float3 ndc = clipPos.xyz / clipPos.w;
-    float2 ssUV = ndc.xy * 0.5 + 0.5;
-#if UNITY_UV_STARTS_AT_TOP
-    ssUV.y = 1.0 - ssUV.y;
-#endif
+    float2 ssUV = TransformWorldToCharShadowCoord(worldPos, i).xy;
 
     float NoL = saturate(dot(-lightDir, normal));
     NoL = LinearStep(0.49, 0.51, NoL);

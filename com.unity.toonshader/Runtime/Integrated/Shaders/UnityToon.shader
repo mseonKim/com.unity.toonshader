@@ -1298,7 +1298,7 @@ Shader "Toon" {
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 #ifdef UNIVERSAL_PIPELINE_CORE_INCLUDED
-            #include "Packages/com.unity.toongraphics/OIT/LinkedListCreation.hlsl"  // CUSTOM - OIT
+            #include "Packages/com.unity.toongraphics/OIT/Shaders/LinkedListCreation.hlsl"  // CUSTOM - OIT
             #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/LitForwardPass.hlsl"
             #include "../../UniversalRP/Shaders/UniversalToonCustomUtility.hlsl"    // CUSTOM
@@ -1567,7 +1567,7 @@ Shader "Toon" {
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 #ifdef UNIVERSAL_PIPELINE_CORE_INCLUDED
-            #include "Packages/com.unity.toongraphics/OIT/OITOutlineUtils.hlsl"
+            #include "Packages/com.unity.toongraphics/OIT/Shaders/OITOutlineUtils.hlsl"
             #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl"
             #include "../../UniversalRP/Shaders/UniversalToonHead.hlsl"
             #include "../../UniversalRP/Shaders/UniversalToonOutline.hlsl"

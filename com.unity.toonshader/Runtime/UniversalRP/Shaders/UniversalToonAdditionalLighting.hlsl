@@ -57,12 +57,12 @@ float3 AdditionalLighting(UtsLight additionalLight, float4 _MainTex_var, float2 
     // finalColor = lerp(finalColor, 0, Set_FinalShadowMask);
 
 #if _USE_CHAR_SHADOW    // CUSTOM (Character Shadow)
-    half ssShadowAtten = GetCharAdditionalShadow(worldPos, Set_UV0, opacity, lightIndex);
+    half ssShadowAtten = GetCharAdditionalShadow(worldPos, opacity, lightIndex);
     finalColor = lerp(finalColor, 0, ssShadowAtten);
 #endif
 
 #if _USE_SSS    // CUSTOM (SSS)
-    // finalColor += SubsurfaceScattering(lightDirection, viewDirection, lerp(normalDir, normalDirection, _Is_NormalMapToBase), Set_BaseColor, Set_LightColor);
+    finalColor += SubsurfaceScattering(lightDirection, viewDirection, lerp(normalDir, normalDirection, _Is_NormalMapToBase), Set_BaseColor, Set_LightColor);
 #endif
     return finalColor;
 }
@@ -135,12 +135,12 @@ float3 AdditionalLightingShadingGradeMap(UtsLight additionalLight, float4 _MainT
     // finalColor = lerp(finalColor, 0, Set_FinalShadowMask);
 
 #if _USE_CHAR_SHADOW    // CUSTOM (Character Shadow)
-    half ssShadowAtten = GetCharAdditionalShadow(worldPos, Set_UV0, opacity, lightIndex);
+    half ssShadowAtten = GetCharAdditionalShadow(worldPos, opacity, lightIndex);
     finalColor = lerp(finalColor, 0, ssShadowAtten);
 #endif
 
 #if _USE_SSS    // CUSTOM (SSS)
-    // finalColor += SubsurfaceScattering(lightDirection, viewDirection, lerp(normalDir, normalDirection, _Is_NormalMapToBase), Set_BaseColor, Set_LightColor);
+    finalColor += SubsurfaceScattering(lightDirection, viewDirection, lerp(normalDir, normalDirection, _Is_NormalMapToBase), Set_BaseColor, Set_LightColor);
 #endif
     return finalColor;
 }
