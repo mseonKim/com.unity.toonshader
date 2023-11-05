@@ -52,6 +52,7 @@ float4 _HighColor_Tex_ST;
 fixed _Is_LightColor_HighColor;
 fixed _Is_NormalMapToHighColor;
 float _HighColor_Power;
+float _HighColor_Feather;
 
 fixed _Is_SpecularToHighColor;
 fixed _Is_BlendAddToHiColor;

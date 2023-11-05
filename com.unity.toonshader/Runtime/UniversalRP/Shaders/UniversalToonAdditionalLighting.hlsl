@@ -44,8 +44,10 @@ float3 AdditionalLighting(UtsLight additionalLight, float4 _MainTex_var, float2 
     //v.2.0.6: Add HighColor if _Is_Filter_HiCutPointLightColor is False
     float4 _Set_HighColorMask_var = tex2D(_Set_HighColorMask, TRANSFORM_TEX(Set_UV0, _Set_HighColorMask));
 
-    float _Specular_var = 0.5*dot(halfDirection, lerp(normalDir, normalDirection, _Is_NormalMapToHighColor)) + 0.5; //  Specular                
-    float _TweakHighColorMask_var = (saturate((_Set_HighColorMask_var.g + _Tweak_HighColorMaskLevel))*lerp((1.0 - step(_Specular_var, (1.0 - pow(_HighColor_Power, 5)))), pow(_Specular_var, exp2(lerp(11, 1, _HighColor_Power))), _Is_SpecularToHighColor));
+    float _Specular_var = 0.5*dot(halfDirection, lerp(normalDir, normalDirection, _Is_NormalMapToHighColor)) + 0.5; //  Specular  
+    float hardSpecularVal = 1.0 - pow(abs(_HighColor_Power), 5);
+    float hardSpecularLinearStep = saturate((hardSpecularVal - (_Specular_var - _HighColor_Feather)) / (2 * _HighColor_Feather)); 
+    float _TweakHighColorMask_var = saturate(_Set_HighColorMask_var.g + _Tweak_HighColorMaskLevel) * lerp(1.0 - hardSpecularLinearStep, pow(_Specular_var, exp2(lerp(11, 1, _HighColor_Power))), _Is_SpecularToHighColor) * _LightIntensity;
 
     float4 _HighColor_Tex_var = tex2D(_HighColor_Tex, TRANSFORM_TEX(Set_UV0, _HighColor_Tex));
 
@@ -123,7 +125,9 @@ float3 AdditionalLightingShadingGradeMap(UtsLight additionalLight, float4 _MainT
 
     float4 _Set_HighColorMask_var = tex2D(_Set_HighColorMask, TRANSFORM_TEX(Set_UV0, _Set_HighColorMask));
     float _Specular_var = 0.5*dot(halfDirection, lerp(normalDir, normalDirection, _Is_NormalMapToHighColor)) + 0.5; //  Specular                
-    float _TweakHighColorMask_var = (saturate((_Set_HighColorMask_var.g + _Tweak_HighColorMaskLevel))*lerp((1.0 - step(_Specular_var, (1.0 - pow(abs(_HighColor_Power), 5)))), pow(abs(_Specular_var), exp2(lerp(11, 1, _HighColor_Power))), _Is_SpecularToHighColor));
+    float hardSpecularVal = 1.0 - pow(abs(_HighColor_Power), 5);
+    float hardSpecularLinearStep = saturate((hardSpecularVal - (_Specular_var - _HighColor_Feather)) / (2 * _HighColor_Feather)); 
+    float _TweakHighColorMask_var = saturate(_Set_HighColorMask_var.g + _Tweak_HighColorMaskLevel) * lerp(1.0 - hardSpecularLinearStep, pow(_Specular_var, exp2(lerp(11, 1, _HighColor_Power))), _Is_SpecularToHighColor) * _LightIntensity;
 
     float4 _HighColor_Tex_var = tex2D(_HighColor_Tex, TRANSFORM_TEX(Set_UV0, _HighColor_Tex));
 

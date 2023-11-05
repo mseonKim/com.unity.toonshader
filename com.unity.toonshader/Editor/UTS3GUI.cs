@@ -808,6 +808,10 @@ namespace UnityEditor.Rendering.Toon
                 label: "Highlight Power", tooltip: "Highlight power factor, pow(x,5) is used inside the shader.",
                 propName: "_HighColor_Power", defaultValue: 0, min: 0, max: 1);
 
+            public static readonly RangeProperty shaderPropHilightFeatherText = new RangeProperty(
+                label: "Hard Highlight Feather", tooltip: "Feathers the boundary between the high color and original color. This property only works for 'Hard' specular mode",
+                propName: "_HighColor_Feather", defaultValue: 0, min: 0, max: 0.1f);
+
             public static readonly RangeProperty hilightMaskLevelText = new RangeProperty(
                 label: "Highlight Mask Level", tooltip: "Highlight mask texture blending level to highlights.",
                 propName: "_Tweak_HighColorMaskLevel", defaultValue: 0, min: -1, max: 1);
@@ -1685,6 +1689,7 @@ namespace UnityEditor.Rendering.Toon
         {
             m_MaterialEditor.TexturePropertySingleLine(Styles.highColorText, highColor_Tex, highColor);
             GUI_RangeProperty(material, Styles.shaderPropHilightPowerText);
+            GUI_RangeProperty(material, Styles.shaderPropHilightFeatherText);
 
             if (!_SimpleUI)
             {
