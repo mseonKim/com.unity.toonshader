@@ -173,7 +173,7 @@
                 float opacity = 0;
 #if _IS_CLIPPING_TRANSMODE
                 opacity = _MainTex_var.a * _BaseColor.a * _Inverse_Clipping_var;
-    #if _USE_OIT
+    #if _USE_OIT && _USE_CHAR_SHADOW
                 Set_FinalBaseColor += OITTransmittance(lightDirection, viewDirection, lerp(i.normalDir, normalDirection, _Is_NormalMapToBase), Set_BaseColor, lightColor, inputData.positionWS, opacity);
     #endif
 #endif

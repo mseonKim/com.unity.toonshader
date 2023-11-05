@@ -1200,11 +1200,13 @@ Shader "Toon" {
             #pragma multi_compile _ADDITIONAL_LIGHTS
             #pragma multi_compile _FORWARD_PLUS
             #pragma shader_feature_local _ _USE_OIT _USE_OIT_OUTLINE
+            #pragma shader_feature_local _USE_CHAR_SHADOW
             // Outline is implemented in UniversalToonOutline.hlsl.
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 #ifdef UNIVERSAL_PIPELINE_CORE_INCLUDED
             #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl"
+            #include "../../UniversalRP/Shaders/UniversalToonCustomUtility.hlsl"    // CUSTOM
             #include "../../UniversalRP/Shaders/UniversalToonHead.hlsl"
             #include "../../UniversalRP/Shaders/UniversalToonOutline.hlsl"
 #endif
@@ -1480,7 +1482,7 @@ Shader "Toon" {
             // #pragma enable_d3d11_debug_symbols
             #pragma shader_feature_local _ALPHATEST_ON
 
-            #pragma vertex TransparentShadowVert
+            #pragma vertex TransparentAlphaSumVert
             #pragma fragment TransparentAlphaSumFragment
 
             #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl"

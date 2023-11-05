@@ -327,6 +327,21 @@
                 float3 envLightSource_SkyboxIntensity = max(ShadeSH9(half4(0.0,0.0,0.0,1.0)),ShadeSH9(half4(0.0,-1.0,0.0,1.0))).rgb;
                 float3 ambientSkyColor = envLightSource_SkyboxIntensity.rgb>0.0 ? envLightSource_SkyboxIntensity*_Unlit_Intensity : envLightSource_GradientEquator*_Unlit_Intensity;
                 //
+
+                /// CUSTOM - These are moved from below [Line Moved] comment location.)
+                float2 Set_UV0 = i.uv0;
+                float4 _MainTex_var = SAMPLE_TEXTURE2D(_MainTex,sampler_MainTex, TRANSFORM_TEX(Set_UV0, _MainTex));
+                float3 Set_BaseColor = _BaseColor.rgb*_MainTex_var.rgb;
+
+                // CUSTOM (Character Shadowmap)
+                half ssShadowAtten = 0;
+                float outlineAlpha = 1;
+#if _USE_CHAR_SHADOW
+                float opacity = _Color.a * _MainTex_var.a;
+                ssShadowAtten = GetCharMainShadow(i.worldPos, Set_UV0, opacity);
+                _LightColor0.rgb = lerp(_LightColor0.rgb, 0, ssShadowAtten);
+#endif
+
                 /// CUSTOM - Outline brightness
 #ifdef _ADDITIONAL_LIGHTS
     #if USE_FORWARD_PLUS
@@ -338,7 +353,12 @@
                         {
                             additionalLight = GetAdditionalUtsLight(iLight, i.worldPos, i.pos);
                         }
-                        _LightColor0.rgb += GetLightColor(additionalLight);
+                        half3 additionalLightColor = GetLightColor(additionalLight);
+        #if _USE_CHAR_SHADOW  // CUSTOM (Character Shadowmap)
+                        ssShadowAtten = GetCharAdditionalShadow(i.worldPos, opacity, lightIndex);
+                        additionalLightColor = lerp(additionalLightColor, 0, ssShadowAtten);
+        #endif
+                        _LightColor0.rgb += additionalLightColor;
                     }
                 UTS_LIGHT_LOOP_END
     #endif
@@ -349,16 +369,14 @@
                 float lightColorIntensity = (0.299*lightColor.r + 0.587*lightColor.g + 0.114*lightColor.b);
                 lightColor = lightColorIntensity<1 ? lightColor : lightColor/lightColorIntensity;
                 lightColor = lerp(half3(1.0,1.0,1.0), lightColor, _Is_LightColor_Outline);
-                float2 Set_UV0 = i.uv0;
-                float4 _MainTex_var = SAMPLE_TEXTURE2D(_MainTex,sampler_MainTex, TRANSFORM_TEX(Set_UV0, _MainTex));
-                float3 Set_BaseColor = _BaseColor.rgb*_MainTex_var.rgb;
+                /// CUSTOM - [Line Moved]
                 float3 _Is_BlendBaseColor_var = lerp( _Outline_Color.rgb*lightColor, (_Outline_Color.rgb*Set_BaseColor*Set_BaseColor*lightColor), _Is_BlendBaseColor );
                 //
                 float3 _OutlineTex_var = tex2D(_OutlineTex,TRANSFORM_TEX(Set_UV0, _OutlineTex)).rgb;
 //v.2.0.7.5
 #ifdef _IS_OUTLINE_CLIPPING_NO
                 float3 Set_Outline_Color = lerp(_Is_BlendBaseColor_var, _OutlineTex_var.rgb*_Outline_Color.rgb*lightColor, _Is_OutlineTex );
-                return float4(Set_Outline_Color,1.0);
+                return float4(Set_Outline_Color, 1.0);
 #elif _IS_OUTLINE_CLIPPING_YES
                 float4 _ClippingMask_var = SAMPLE_TEXTURE2D(_ClippingMask, sampler_MainTex, TRANSFORM_TEX(Set_UV0, _ClippingMask));
                 float Set_MainTexAlpha = _MainTex_var.a;

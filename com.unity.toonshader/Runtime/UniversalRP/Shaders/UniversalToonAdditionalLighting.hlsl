@@ -37,7 +37,7 @@ float3 AdditionalLighting(UtsLight additionalLight, float4 _MainTex_var, float2 
     float3 finalShadeColor = lerp(Set_1st_ShadeColor, Set_2nd_ShadeColor, saturate((1.0 + ((_HalfLambert_var - (shadeColorStep - _1st2nd_Shades_Feather)) * ((1.0 - _Set_2nd_ShadePosition_var.rgb).r - 1.0)) / (shadeColorStep - (shadeColorStep - _1st2nd_Shades_Feather)))));
     float3 finalColor = lerp(Set_BaseColor, 0, Set_FinalShadowMask); // Final Color
 
-#if _IS_CLIPPING_TRANSMODE && _USE_OIT  // CUSTOM (OIT Transmittance)
+#if _IS_CLIPPING_TRANSMODE && _USE_OIT && _USE_CHAR_SHADOW  // CUSTOM (OIT Transmittance)
     finalColor += AdditionalOITTransmittance(lightDirection, viewDirection, lerp(normalDir, normalDirection, _Is_NormalMapToBase), Set_BaseColor, Set_LightColor, worldPos, opacity, lightIndex);
 #endif
 
@@ -117,7 +117,7 @@ float3 AdditionalLightingShadingGradeMap(UtsLight additionalLight, float4 _MainT
     float3 finalColor = lerp(Set_BaseColor, finalShadeColor, Set_FinalShadowMask);
     //v.2.0.6: Add HighColor if _Is_Filter_HiCutPointLightColor is False
 
-#if _IS_CLIPPING_TRANSMODE && _USE_OIT  // CUSTOM (OIT Transmittance)
+#if _IS_CLIPPING_TRANSMODE && _USE_OIT && _USE_CHAR_SHADOW  // CUSTOM (OIT Transmittance)
     finalColor += AdditionalOITTransmittance(lightDirection, viewDirection, lerp(normalDir, normalDirection, _Is_NormalMapToBase), Set_BaseColor, Set_LightColor, worldPos, opacity, lightIndex);
 #endif
 
