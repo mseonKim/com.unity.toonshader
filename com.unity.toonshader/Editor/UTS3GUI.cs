@@ -962,6 +962,10 @@ namespace UnityEditor.Rendering.Toon
             public static readonly RangeProperty minLightIntensityText = new RangeProperty(label: "Min Light Intensity", tooltip: "",
                 propName: "_MinLightIntensity", defaultValue: 0.25f, min: 0.01f, max: 1f);
 
+            public static readonly RangeProperty AdditionalShadowDimmerText = new RangeProperty(label: "Additional Shadow Dimmer",
+                tooltip: "Apply dimmer to additional shadow when the main light is active. If the color of main light is 0, additional shadow color will be 0.",
+                propName: "_AdditionalShadowDimmer", defaultValue: 0.1f, min: 0, max: 1f);
+
             public static readonly FloatProperty faceSDFOffsetText = new FloatProperty(label: "Face SDF Offset",
                 tooltip: "",
                 propName: "_SDF_Offset", defaultValue: 0);
@@ -2545,6 +2549,9 @@ namespace UnityEditor.Rendering.Toon
 
             // Minimum directional light intensity
             GUI_RangeProperty(material, Styles.minLightIntensityText);
+
+            // Additional Shadow Dimmer
+            GUI_RangeProperty(material, Styles.AdditionalShadowDimmerText);
             
             // Face SDF Shadow
             var ret = EditorGUILayout.Toggle(Styles.sdfSamplerText.text, isSDFEnabled);

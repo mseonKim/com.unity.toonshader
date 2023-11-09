@@ -492,7 +492,8 @@ Shader "Toon" {
 
         // --------------------------
         // CUSTOM
-        _MinLightIntensity("Min Light Intensity", Range(0.01, 1)) = 0.1 // = 1.0 / Texture.size
+        _MinLightIntensity("Min Light Intensity", Range(0.01, 1)) = 0.1
+        _AdditionalShadowDimmer("Additional Shadow Dimmer", Range(0, 1)) = 0.1
         _SDF_Tex("SDF_Tex", 2D) = "white" {}    // Alpha: SDF_ShadowMask for shadow ray
         _SDF_Offset("SDF_Offset", Float) = 0.0
         _FaceForward("Face Forward Vector", Vector) = (0, 0, 1, 0)
@@ -1296,7 +1297,7 @@ Shader "Toon" {
             #pragma shader_feature_local _USE_ANISOTROPIC_HAIR
             #pragma shader_feature_local _USE_OIT
             #pragma shader_feature_local _USE_SSS
-            #pragma multi_compile _HIGH_CHAR_SOFTSHADOW
+            #pragma shader_feature _HIGH_CHAR_SOFTSHADOW
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"

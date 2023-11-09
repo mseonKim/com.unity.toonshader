@@ -35,7 +35,8 @@ float3 AdditionalLighting(UtsLight additionalLight, float4 _MainTex_var, float2 
     float Set_FinalShadowMask = saturate((1.0 + ((lerp(_HalfLambert_var, (_HalfLambert_var*saturate(1.0 + _Tweak_SystemShadowsLevel)), _Set_SystemShadowsToBase) - (baseColorStep - _BaseShade_Feather)) * ((1.0 - _Set_1st_ShadePosition_var.rgb).r - 1.0)) / (baseColorStep - (baseColorStep - _BaseShade_Feather))));
     //Composition: 3 Basic Colors as finalColor
     float3 finalShadeColor = lerp(Set_1st_ShadeColor, Set_2nd_ShadeColor, saturate((1.0 + ((_HalfLambert_var - (shadeColorStep - _1st2nd_Shades_Feather)) * ((1.0 - _Set_2nd_ShadePosition_var.rgb).r - 1.0)) / (shadeColorStep - (shadeColorStep - _1st2nd_Shades_Feather)))));
-    float3 finalColor = lerp(Set_BaseColor, 0, Set_FinalShadowMask); // Final Color
+    finalShadeColor = _MainLightColor.r + _MainLightColor.g + _MainLightColor.b > 0 ? finalShadeColor * _AdditionalShadowDimmer : 0;
+    float3 finalColor = lerp(Set_BaseColor, finalShadeColor, Set_FinalShadowMask); // Final Color
 
 #if _IS_CLIPPING_TRANSMODE && _USE_OIT && _USE_CHAR_SHADOW  // CUSTOM (OIT Transmittance)
     finalColor += AdditionalOITTransmittance(lightDirection, viewDirection, lerp(normalDir, normalDirection, _Is_NormalMapToBase), Set_BaseColor, Set_LightColor, worldPos, opacity, lightIndex);
@@ -60,7 +61,10 @@ float3 AdditionalLighting(UtsLight additionalLight, float4 _MainTex_var, float2 
 
 #if _USE_CHAR_SHADOW    // CUSTOM (Character Shadow)
     half ssShadowAtten = GetCharAdditionalShadow(worldPos, opacity, lightIndex);
-    finalColor = lerp(finalColor, 0, ssShadowAtten);
+    // finalColor = lerp(finalColor, 0, ssShadowAtten);
+    finalColor = lerp(finalColor, finalShadeColor, ssShadowAtten);
+    // finalColor = lerp(finalColor, dotNL > 0 ? finalShadeColor * 0.1 : 0, ssShadowAtten);
+    // finalColor = lerp(finalColor, lerp(finalShadeColor, 0, Set_FinalShadowMask), ssShadowAtten);
 #endif
 
 #if _USE_SSS    // CUSTOM (SSS)
@@ -116,6 +120,7 @@ float3 AdditionalLightingShadingGradeMap(UtsLight additionalLight, float4 _MainT
 
     //Composition: 3 Basic Colors as finalColor
     float3 finalShadeColor = lerp(Set_1st_ShadeColor, Set_2nd_ShadeColor, Set_ShadeShadowMask);
+    finalShadeColor = _MainLightColor.r + _MainLightColor.g + _MainLightColor.b > 0 ? finalShadeColor * _AdditionalShadowDimmer : 0;
     float3 finalColor = lerp(Set_BaseColor, finalShadeColor, Set_FinalShadowMask);
     //v.2.0.6: Add HighColor if _Is_Filter_HiCutPointLightColor is False
 
@@ -140,7 +145,7 @@ float3 AdditionalLightingShadingGradeMap(UtsLight additionalLight, float4 _MainT
 
 #if _USE_CHAR_SHADOW    // CUSTOM (Character Shadow)
     half ssShadowAtten = GetCharAdditionalShadow(worldPos, opacity, lightIndex);
-    finalColor = lerp(finalColor, 0, ssShadowAtten);
+    finalColor = lerp(finalColor, finalShadeColor, ssShadowAtten);
 #endif
 
 #if _USE_SSS    // CUSTOM (SSS)
