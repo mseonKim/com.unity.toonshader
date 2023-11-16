@@ -1227,8 +1227,8 @@ namespace UnityEditor.Rendering.Toon
             }
             else
             {
-                SetupOverDrawTransparentObject(material);
-                // SetupOutline_Transparent(material);
+                // SetupOverDrawTransparentObject(material);
+                SetupOutline_Transparent(material);
             }
             ShaderPropertiesGUI(materialEditor, material, props);
 
@@ -2329,6 +2329,7 @@ namespace UnityEditor.Rendering.Toon
             var srpDefaultLightModeTag = material.GetTag("LightMode", false, srpDefaultLightModeName);
             if (srpDefaultLightModeTag == srpDefaultLightModeName)
             {
+                material.SetShaderPassEnabled(srpDefaultLightModeName, false);
                 MaterialSetInt(material, srpDefaultColorMask, 0);
                 MaterialSetInt(material,srpDefaultCullMode, (int)CullingMode.Backface);
             }
