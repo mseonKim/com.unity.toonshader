@@ -960,7 +960,7 @@ namespace UnityEditor.Rendering.Toon
 
             // CUSTOM
             public static readonly RangeProperty minLightIntensityText = new RangeProperty(label: "Min Light Intensity", tooltip: "",
-                propName: "_MinLightIntensity", defaultValue: 0.25f, min: 0.01f, max: 1f);
+                propName: "_MinLightIntensity", defaultValue: 0.1f, min: 0.001f, max: 1f);
 
             public static readonly RangeProperty AdditionalShadowDimmerText = new RangeProperty(label: "Additional Shadow Dimmer",
                 tooltip: "Apply dimmer to additional shadow when the main light is active. If the color of main light is 0, additional shadow color will be 0.",
