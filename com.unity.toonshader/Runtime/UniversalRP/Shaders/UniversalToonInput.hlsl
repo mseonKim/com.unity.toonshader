@@ -220,6 +220,11 @@ half _HairHiUVOffset;
 half _SSS_Power;
 half _SSS_Scale;
 half _SSS_Normal_Distortion;
+float4 _TransformerMaskPivot;
+float4 _MeshTransformScale; // w unused
+float4 _MeshTransformOffset; // w unused
+uint _TransformerMaskChannel;
+uint _UseTransformerMask;
 
 CBUFFER_END
 

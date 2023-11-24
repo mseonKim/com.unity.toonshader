@@ -150,20 +150,21 @@
                 //v.2.0.7
                 float mirrorFlag : TEXCOORD5;
 
-            DECLARE_LIGHTMAP_OR_SH(lightmapUV, vertexSH, 6);
+                DECLARE_LIGHTMAP_OR_SH(lightmapUV, vertexSH, 6);
+                float3 positionOS : TEXCOORD7;
 #if defined(_ADDITIONAL_LIGHTS_VERTEX) || (VERSION_LOWER(12, 0))
-            half4 fogFactorAndVertexLight   : TEXCOORD7; // x: fogFactor, yzw: vertex light
+                half4 fogFactorAndVertexLight   : TEXCOORD8; // x: fogFactor, yzw: vertex light
 #else
-            half  fogFactor            	: TEXCOORD7; 
+                half  fogFactor            	: TEXCOORD8; 
 #endif 
 
 # ifndef _MAIN_LIGHT_SHADOWS
-            float4 positionCS               : TEXCOORD8;
-                int   mainLightID              : TEXCOORD9;
-# else
-            float4 shadowCoord              : TEXCOORD8;
             float4 positionCS               : TEXCOORD9;
                 int   mainLightID              : TEXCOORD10;
+# else
+            float4 shadowCoord              : TEXCOORD9;
+            float4 positionCS               : TEXCOORD10;
+                int   mainLightID              : TEXCOORD11;
 # endif
             UNITY_VERTEX_INPUT_INSTANCE_ID
             UNITY_VERTEX_OUTPUT_STEREO
@@ -179,18 +180,19 @@
                 float mirrorFlag : TEXCOORD6;
 
                 DECLARE_LIGHTMAP_OR_SH(lightmapUV, vertexSH, 7);
+                float3 positionOS : TEXCOORD8;
 #if defined(_ADDITIONAL_LIGHTS_VERTEX) || (VERSION_LOWER(12, 0))
-                half4 fogFactorAndVertexLight   : TEXCOORD8; // x: fogFactor, yzw: vertex light
+                half4 fogFactorAndVertexLight   : TEXCOORD9; // x: fogFactor, yzw: vertex light
 #else
-            half  fogFactor            	: TEXCOORD8; // x: fogFactor, yzw: vertex light
+                half  fogFactor            	: TEXCOORD9; // x: fogFactor, yzw: vertex light
 #endif 
 # ifndef _MAIN_LIGHT_SHADOWS
-                float4 positionCS               : TEXCOORD9;
-                int   mainLightID              : TEXCOORD10;
-# else
-                float4 shadowCoord              : TEXCOORD9;
                 float4 positionCS               : TEXCOORD10;
                 int   mainLightID              : TEXCOORD11;
+# else
+                float4 shadowCoord              : TEXCOORD10;
+                float4 positionCS               : TEXCOORD11;
+                int   mainLightID              : TEXCOORD12;
 # endif
                 UNITY_VERTEX_INPUT_INSTANCE_ID
                 UNITY_VERTEX_OUTPUT_STEREO
@@ -478,7 +480,7 @@
                 o.mainLightID = DetermineUTS_MainLightIndex(o.posWorld.xyz, 0, positionCS);
 #endif
 
-		
+                o.positionOS = v.vertex.xyz;
                 return o;
             }
 
@@ -502,10 +504,30 @@
 #endif
         float4 frag(VertexOutput i, fixed facing : VFACE, uint uSampleIdx : SV_SampleIndex) : SV_TARGET
             {
-#if defined(_SHADINGGRADEMAP)
-                    return fragShadingGradeMap(i, facing, uSampleIdx);
+#if _MATERIAL_TRANSFORM
+                    float lerpVal = 0;
+                    MATERIAL_TRANSFORMER_CHECK(i.positionOS)
+                    MaterialTransformerFragDiscard(mask, transformVal);
+                    float4 dissolveColor = MaterialTransformDissolve(mask, transformVal, lerpVal, i.uv0, sampler_MainTex);
+                    
+    #ifdef _USE_OIT
+                    if (lerpVal > 0)
+                    {
+                        createFragmentEntry(float4(dissolveColor.rgb, 0.5), i.pos.xyz, uSampleIdx);
+                        clip(-1);
+                    }
+    #endif
+    #if defined(_SHADINGGRADEMAP)
+                    float4 finalColor = fragShadingGradeMap(i, facing, uSampleIdx);
+    #else
+                    float4 finalColor = fragDoubleShadeFeather(i, facing, uSampleIdx);
+    #endif
+                    return max(finalColor, float4(dissolveColor.rgb, 0));
 #else
+    #if defined(_SHADINGGRADEMAP)
+                    return fragShadingGradeMap(i, facing, uSampleIdx);
+    #else
                     return fragDoubleShadeFeather(i, facing, uSampleIdx);
+    #endif
 #endif
-
             }

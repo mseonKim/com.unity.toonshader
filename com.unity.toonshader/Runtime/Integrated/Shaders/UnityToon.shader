@@ -507,6 +507,10 @@ Shader "Toon" {
         _SSS_Power("SSS Power", Range(1.0, 64.0)) = 16.0
         _SSS_Scale("SSS Scale", Range(0.0, 4.0)) = 0.5
         _SSS_Normal_Distortion("SSS Normal Distortion", Range(0.0, 1.0)) = 0.5
+        _TransformerMaskPivot("", Vector) = (0, 1, 0, 0)
+        _MeshTransformScale("", Vector) = (1, 1, 1, 0)
+        _TransformerMaskChannel("", Float) = 0
+        _UseTransformerMask("", Float) = 0
 	//////////////////////////////////////////////////////////////////////////////
 	//////////////////// End of HDRP material default values. ////////////////////
 	//////////////////////////////////////////////////////////////////////////////
@@ -1201,13 +1205,14 @@ Shader "Toon" {
             // CUSTOM
             #pragma multi_compile _ADDITIONAL_LIGHTS
             #pragma multi_compile _FORWARD_PLUS
-            #pragma shader_feature_local _ _USE_OIT _USE_OIT_OUTLINE
             #pragma shader_feature_local _USE_CHAR_SHADOW
+            #pragma multi_compile_fragment _MATERIAL_TRANSFORM
             // Outline is implemented in UniversalToonOutline.hlsl.
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 #ifdef UNIVERSAL_PIPELINE_CORE_INCLUDED
             #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl"
+            #include "Packages/com.unity.toongraphics/MaterialTransform/Shaders/MaterialTransformInput.hlsl"  // CUSTOM
             #include "../../UniversalRP/Shaders/UniversalToonCustomUtility.hlsl"    // CUSTOM
             #include "../../UniversalRP/Shaders/UniversalToonHead.hlsl"
             #include "../../UniversalRP/Shaders/UniversalToonOutline.hlsl"
@@ -1298,12 +1303,14 @@ Shader "Toon" {
             #pragma shader_feature_local _USE_OIT
             #pragma shader_feature_local _USE_SSS
             #pragma shader_feature _HIGH_CHAR_SOFTSHADOW
+            #pragma multi_compile_fragment _MATERIAL_TRANSFORM
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 #ifdef UNIVERSAL_PIPELINE_CORE_INCLUDED
             #include "Packages/com.unity.toongraphics/OIT/Shaders/LinkedListCreation.hlsl"  // CUSTOM - OIT
             #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl"
+            #include "Packages/com.unity.toongraphics/MaterialTransform/Shaders/MaterialTransformInput.hlsl"  // CUSTOM
             #include "Packages/com.unity.render-pipelines.universal/Shaders/LitForwardPass.hlsl"
             #include "../../UniversalRP/Shaders/UniversalToonCustomUtility.hlsl"    // CUSTOM
             #include "../../UniversalRP/Shaders/UniversalToonHead.hlsl"
@@ -1336,7 +1343,8 @@ Shader "Toon" {
             #pragma fragment ShadowPassFragment
 
             #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/ShadowCasterPass.hlsl"
+            // #include "Packages/com.unity.render-pipelines.universal/Shaders/ShadowCasterPass.hlsl"
+            #include "Packages/com.unity.toongraphics/MaterialTransform/Shaders/ShadowCasterMaterialTransform.hlsl" // CUSTOM
             ENDHLSL
         }
 
@@ -1366,7 +1374,8 @@ Shader "Toon" {
 
 
             #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/DepthOnlyPass.hlsl"
+            // #include "Packages/com.unity.render-pipelines.universal/Shaders/DepthOnlyPass.hlsl"
+            #include "Packages/com.unity.toongraphics/MaterialTransform/Shaders/DepthOnlyPassMaterialTransform.hlsl" // CUSTOM
             ENDHLSL
         }
         // This pass is used when drawing to a _CameraNormalsTexture texture
@@ -1398,7 +1407,8 @@ Shader "Toon" {
 
 
             #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/DepthNormalsPass.hlsl"
+            // #include "Packages/com.unity.render-pipelines.universal/Shaders/DepthNormalsPass.hlsl"
+            #include "Packages/com.unity.toongraphics/MaterialTransform/Shaders/DepthNormalsPassMaterialTransform.hlsl" // CUSTOM
 
             ENDHLSL
         }
@@ -1425,9 +1435,7 @@ Shader "Toon" {
 
             #pragma vertex CharShadowVertex
             #pragma fragment CharShadowFragment
-            #pragma shader_feature _CHAR_ADDITIONAL_LIGHT_SHADOW_0
-            #pragma shader_feature _CHAR_ADDITIONAL_LIGHT_SHADOW_1
-            #pragma shader_feature _CHAR_ADDITIONAL_LIGHT_SHADOW_2
+            #pragma multi_compile_fragment _MATERIAL_TRANSFORM
 
             #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl"
             #include "Packages/com.unity.toongraphics/CharacterShadowMap/Shaders/CharacterShadowDepthPass.hlsl"
@@ -1454,6 +1462,7 @@ Shader "Toon" {
             // #pragma shader_feature_local _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
             // #pragma enable_d3d11_debug_symbols
             #pragma shader_feature_local _ALPHATEST_ON
+            #pragma multi_compile_fragment _MATERIAL_TRANSFORM
 
             #pragma vertex TransparentShadowVert
             #pragma fragment TransparentShadowFragment
@@ -1483,6 +1492,7 @@ Shader "Toon" {
             // #pragma shader_feature_local _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
             // #pragma enable_d3d11_debug_symbols
             #pragma shader_feature_local _ALPHATEST_ON
+            #pragma multi_compile_fragment _MATERIAL_TRANSFORM
 
             #pragma vertex TransparentAlphaSumVert
             #pragma fragment TransparentAlphaSumFragment
@@ -1511,6 +1521,14 @@ Shader "Toon" {
             // #pragma enable_d3d11_debug_symbols
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+            float4 _TransformerMaskPivot;
+            float4 _MeshTransformScale; // w unused
+            float4 _MeshTransformOffset; // w unused
+            uint _TransformerMaskChannel;
+            uint _UseTransformerMask;
+            #include "Packages/com.unity.toongraphics/MaterialTransform/Shaders/MaterialTransformInput.hlsl"
+
             struct Attributes
             {
                 float4 position     : POSITION;
@@ -1518,18 +1536,22 @@ Shader "Toon" {
             struct Varyings
             {
                 float4 positionCS   : SV_POSITION;
+                float3 positionOS   : TEXCOORD0;
             };
 
             Varyings vert(Attributes input)
             {
                 Varyings output = (Varyings)0;
                 output.positionCS = TransformObjectToHClip(input.position.xyz);
+                output.positionOS = input.position.xyz;
                 // output.positionCS.z = 1.0;
                 return output;
             }
 
             float frag(Varyings input) : SV_TARGET
             {
+                // Material Transformer
+                MaterialTransformerFragDiscard(input.positionOS.xyz);
                 return input.positionCS.z;
                 // return max(0.1, input.positionCS.z);
             }
@@ -1567,15 +1589,38 @@ Shader "Toon" {
             #pragma shader_feature _USE_OIT_OUTLINE
             #pragma multi_compile _ADDITIONAL_LIGHTS
             #pragma multi_compile _FORWARD_PLUS
+            #pragma multi_compile_fragment _MATERIAL_TRANSFORM
             // Outline is implemented in UniversalToonOutline.hlsl.
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 #ifdef UNIVERSAL_PIPELINE_CORE_INCLUDED
             #include "Packages/com.unity.toongraphics/OIT/Shaders/OITOutlineUtils.hlsl"
             #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl"
+            #include "Packages/com.unity.toongraphics/MaterialTransform/Shaders/MaterialTransformInput.hlsl"  // CUSTOM
             #include "../../UniversalRP/Shaders/UniversalToonHead.hlsl"
             #include "../../UniversalRP/Shaders/UniversalToonOutline.hlsl"
 #endif
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Name "SmokeVolumeDepth"
+            Tags{"LightMode" = "SmokeVolumeDepth"}
+
+            ZWrite On
+            ZTest LEqual
+            Cull Off
+            BlendOp Max
+
+            HLSLPROGRAM
+	    
+            // #pragma enable_d3d11_debug_symbols
+
+            #pragma vertex SmokeDepthVertex
+            #pragma fragment SmokeDepthFragment
+
+            #include "Packages/com.unity.universal-forwardplus-volumetric/Shaders/LocalVolumetricFog/SmokeDepthPass.hlsl"
             ENDHLSL
         }
 

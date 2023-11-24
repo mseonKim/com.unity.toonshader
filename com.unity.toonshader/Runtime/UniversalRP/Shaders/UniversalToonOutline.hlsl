@@ -258,6 +258,7 @@
                 float3 tangentDir : TEXCOORD2;
                 float3 bitangentDir : TEXCOORD3;
                 float3 worldPos : TEXCOORD4;
+                float3 objectPos : TEXCOORD5;
 
                 UNITY_VERTEX_OUTPUT_STEREO
             };
@@ -306,6 +307,8 @@
 #endif
                 //v.2.0.7.5
                 o.pos.z = o.pos.z + _Offset_Z * _ClipCameraPos.z;
+
+                o.objectPos = v.vertex.xyz;
                 return o;
             }
 
@@ -313,6 +316,10 @@
             [earlydepthstencil]
 #endif
             float4 frag(VertexOutput i) : SV_Target{
+#if _MATERIAL_TRANSFORM
+                // Material Transformer
+                MaterialTransformerFragDiscard(i.objectPos);
+#endif
                 //v.2.0.5
 #ifndef _USE_OIT_OUTLINE // CUSTOM - OIT Outline
                 if (_ZOverDrawMode > 0.99f)
