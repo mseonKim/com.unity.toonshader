@@ -509,6 +509,7 @@ Shader "Toon" {
         _SSS_Normal_Distortion("SSS Normal Distortion", Range(0.0, 1.0)) = 0.5
         _TransformerMaskPivot("", Vector) = (0, 1, 0, 0)
         _MeshTransformScale("", Vector) = (1, 1, 1, 0)
+        _MeshTransformOffset("", Vector) = (0, 0, 0, 0)
         _TransformerMaskChannel("", Float) = 0
         _UseTransformerMask("", Float) = 0
 	//////////////////////////////////////////////////////////////////////////////
@@ -1520,13 +1521,7 @@ Shader "Toon" {
             #pragma fragment frag
             // #pragma enable_d3d11_debug_symbols
 
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-
-            float4 _TransformerMaskPivot;
-            float4 _MeshTransformScale; // w unused
-            float4 _MeshTransformOffset; // w unused
-            uint _TransformerMaskChannel;
-            uint _UseTransformerMask;
+            #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl" // To make compatible with SRP Batcher
             #include "Packages/com.unity.toongraphics/MaterialTransform/Shaders/MaterialTransformInput.hlsl"
 
             struct Attributes

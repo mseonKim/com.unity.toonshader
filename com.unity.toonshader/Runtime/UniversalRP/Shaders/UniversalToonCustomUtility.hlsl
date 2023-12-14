@@ -63,7 +63,7 @@ half GetFaceSDFAtten(half3 lightDir, float2 uv)
     _SDF_var = lerp(_SDF_var, 1.0 - _SDF_var, _SDF_Reverse);
     
     // TODO: Blur Face Texture
-    return (0.0, 1.0, _SDF_var + _SDF_Offset <= NoL);
+    return lerp(0.0, 1.0, (_SDF_var + _SDF_Offset) <= NoL);
 }
 
 
@@ -89,11 +89,11 @@ half GetCharAdditionalShadow(float3 worldPos, float opacity, uint lightIndex)
 
 half3 AnisotropicHairHighlight(float3 viewDirection, float2 uv, float3 worldPos)
 {
-    float dotViewUp = saturate(dot(viewDirection, _HeadUpWorldDir));
+    float dotViewUp = saturate(dot(viewDirection, _HeadUpWorldDir.xyz));
     float sinVU = sqrt(1 - dotViewUp * dotViewUp);
     float2 hairUV = float2(uv.x, uv.y + sinVU * _HairHiUVOffset);
     float hairHiTexVar = SAMPLE_TEXTURE2D(_Hair_Highlight_Tex, sampler_Hair_Highlight_Tex, TRANSFORM_TEX(hairUV, _Hair_Highlight_Tex)).a;
-    float3 hairDir = normalize(worldPos - _HeadWorldPos);
+    float3 hairDir = normalize(worldPos - _HeadWorldPos.xyz);
     float dotVH = dot(viewDirection, hairDir) * 0.5 + 0.5;
     return pow(lerp(0, hairHiTexVar.xxx, dotVH), 4);
 }
