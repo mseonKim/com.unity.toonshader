@@ -297,6 +297,9 @@
                 float3 finalColor = lerp(_RimLight_var, matCapColorFinal, _MatCap);// Final Composition before Emissive
                 finalColor += lerp(0, matCap2ColorFinal, _MatCap2);
 
+                // Glitter
+                Glitter(finalColor, opacity, viewDirection, i.normalDir, normalDirection, Set_UV0, Set_FinalBaseColor, shadowAttenuation, lightDirection, lightColor);
+
                 // CUSTOM (Anisotropic Hair)
 #if _USE_ANISOTROPIC_HAIR
                 finalColor += AnisotropicHairHighlight(viewDirection, Set_UV0, inputData.positionWS);

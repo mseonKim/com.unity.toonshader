@@ -488,6 +488,7 @@
 
 
 
+#include "UniversalToonGlitter.hlsl"
 #include "UniversalToonAdditionalLighting.hlsl"
 #if defined(_SHADINGGRADEMAP)
 

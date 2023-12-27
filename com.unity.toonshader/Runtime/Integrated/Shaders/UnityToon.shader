@@ -487,7 +487,30 @@ Shader "Toon" {
         [ToggleUI] _ReceivesSSR("Receives SSR", Float) = 1.0
         [ToggleUI] _AddPrecomputedVelocity("AddPrecomputedVelocity", Float) = 0.0
 
-
+        // --------------------------
+        // Glitter
+        [ToggleUI] _Glitter("Use Glitter", Float) = 0
+        [Enum(UV0, 0, UV1, 1)] _GlitterUVMode("Glitter UV Mode", Float) = 0
+        [HDR] _GlitterColor("Color", Color) = (1,1,1,1)
+        _GlitterColorTex("Texture", 2D) = "white" {}
+        [Enum(UV0, 0, UV1, 1, UV2, 2, UV3, 3)] _GlitterColorTex_UVMode("GlitterColorTex UVMode", Float) = 0
+        _GlitterMainStrength("Main Color Strength", Range(0, 1)) = 0
+        _GlitterEnableLighting("Enable Lighting", Range(0, 1)) = 1
+        [ToggleUI] _GlitterBackfaceMask("Backface Mask", Float) = 0
+        [ToggleUI] _GlitterApplyTransparency("Apply Transparency", Float) = 1
+        _GlitterShadowMask("Shadow Mask", Range(0, 1)) = 0
+        _GlitterParticleSize("Particle Size", Float) = 0.16
+        _GlitterScaleRandomize("Scale Randomize", Range(0, 1)) = 0
+        _GlitterContrast("Contrast", Float) = 50
+        _GlitterSensitivity("Sensitivity", Float) = 100
+        _GlitterBlinkSpeed("Blink Speed", Float) = 0.1
+        _GlitterAngleLimit("Angle Limit", Float) = 0
+        _GlitterLightDirection("Light Direction Strength", Float) = 0
+        _GlitterColorRandomness("Color Randomness", Range(0, 1)) = 0
+        _GlitterNormalStrength("NormalMap Strength", Range(0, 1)) = 1.0
+        _GlitterPostContrast("Post Contrast", Float) = 1
+        //_GlitterParams1("Tiling|Particle Size|Contrast", Vector) = (256,256,0.16,50)
+        //_GlitterParams2("Blink Speed|Angle|Blend Light Direction|Color Randomness", Vector) = (0.25,0,0,0)
 
 
         // --------------------------

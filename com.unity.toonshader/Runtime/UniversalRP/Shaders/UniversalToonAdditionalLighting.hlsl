@@ -36,7 +36,8 @@ float3 AdditionalLighting(UtsLight additionalLight, float4 _MainTex_var, float2 
     //Composition: 3 Basic Colors as finalColor
     float3 finalShadeColor = lerp(Set_1st_ShadeColor, Set_2nd_ShadeColor, saturate((1.0 + ((_HalfLambert_var - (shadeColorStep - _1st2nd_Shades_Feather)) * ((1.0 - _Set_2nd_ShadePosition_var.rgb).r - 1.0)) / (shadeColorStep - (shadeColorStep - _1st2nd_Shades_Feather)))));
     finalShadeColor = _MainLightColor.r + _MainLightColor.g + _MainLightColor.b > 0 ? finalShadeColor * _AdditionalShadowDimmer : 0;
-    float3 finalColor = lerp(Set_BaseColor, finalShadeColor, Set_FinalShadowMask); // Final Color
+    float3 Set_FinalBaseColor = lerp(Set_BaseColor, finalShadeColor, Set_FinalShadowMask); // Final Color
+    float3 finalColor = Set_FinalBaseColor;
 
 #if _IS_CLIPPING_TRANSMODE && _USE_OIT && _USE_CHAR_SHADOW  // CUSTOM (OIT Transmittance)
     finalColor += AdditionalOITTransmittance(lightDirection, viewDirection, lerp(normalDir, normalDirection, _Is_NormalMapToBase), Set_BaseColor, Set_LightColor, worldPos, opacity, lightIndex);
@@ -58,6 +59,9 @@ float3 AdditionalLighting(UtsLight additionalLight, float4 _MainTex_var, float2 
 
     finalColor = SATURATE_IF_SDR(finalColor);
     // finalColor = lerp(finalColor, 0, Set_FinalShadowMask);
+
+    // Glitter
+    Glitter(finalColor, opacity, viewDirection, normalDir, normalDirection, Set_UV0, Set_FinalBaseColor, additionalLight.shadowAttenuation, lightDirection, lightColor);
 
 #if _USE_CHAR_SHADOW    // CUSTOM (Character Shadow)
     half ssShadowAtten = GetCharAdditionalShadow(worldPos, opacity, lightIndex);
@@ -121,7 +125,8 @@ float3 AdditionalLightingShadingGradeMap(UtsLight additionalLight, float4 _MainT
     //Composition: 3 Basic Colors as finalColor
     float3 finalShadeColor = lerp(Set_1st_ShadeColor, Set_2nd_ShadeColor, Set_ShadeShadowMask);
     finalShadeColor = _MainLightColor.r + _MainLightColor.g + _MainLightColor.b > 0 ? finalShadeColor * _AdditionalShadowDimmer : 0;
-    float3 finalColor = lerp(Set_BaseColor, finalShadeColor, Set_FinalShadowMask);
+    float3 Set_FinalBaseColor = lerp(Set_BaseColor, finalShadeColor, Set_FinalShadowMask);
+    float3 finalColor = Set_FinalBaseColor;
     //v.2.0.6: Add HighColor if _Is_Filter_HiCutPointLightColor is False
 
 #if _IS_CLIPPING_TRANSMODE && _USE_OIT && _USE_CHAR_SHADOW  // CUSTOM (OIT Transmittance)
@@ -142,6 +147,9 @@ float3 AdditionalLightingShadingGradeMap(UtsLight additionalLight, float4 _MainT
 
     finalColor = SATURATE_IF_SDR(finalColor);
     // finalColor = lerp(finalColor, 0, Set_FinalShadowMask);
+
+    // Glitter
+    Glitter(finalColor, opacity, viewDirection, normalDir, normalDirection, Set_UV0, Set_FinalBaseColor, additionalLight.shadowAttenuation, lightDirection, lightColor);
 
 #if _USE_CHAR_SHADOW    // CUSTOM (Character Shadow)
     half ssShadowAtten = GetCharAdditionalShadow(worldPos, opacity, lightIndex);

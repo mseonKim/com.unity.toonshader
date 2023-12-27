@@ -214,7 +214,12 @@ namespace UnityEditor.Rendering.Toon
 
         internal const string ShaderDefineIS_CLIPPING_MATTE = "_IS_CLIPPING_MATTE";
 
+        // Glitter
+        internal const string ShaderProp_Glitter = "_Glitter";
+        internal const string ShaderProp_GlitterBackfaceMask = "_GlitterBackfaceMask";
+        internal const string ShaderProp_GlitterApplyTransparency = "_GlitterApplyTransparency";
         
+
         /// CUSTOM Keywords
         internal const string CustomShaderPropUse_SDF = "_USE_SDF";
         internal const string CustomShaderPropUse_CHAR_SHADOW = "_USE_CHAR_SHADOW";
@@ -335,7 +340,8 @@ namespace UnityEditor.Rendering.Toon
             SceneLight = 1 << 12,
             EnvironmentalLightEffectiveness = 1 << 13,
             MetaverseSettings = 1 << 14,
-            Custom = 1 << 15
+            Glitter = 1 << 15,
+            Custom = 1 << 16
         }
 
         // variables which must be gotten from shader at the beggning of GUI
@@ -438,6 +444,10 @@ namespace UnityEditor.Rendering.Toon
         protected MaterialProperty offset_Z = null;
         protected MaterialProperty outlineTex = null;
         protected MaterialProperty bakedNormal = null;
+
+        // Glitter
+        protected MaterialProperty glitter_Tex = null;
+        protected MaterialProperty glitterColor = null;
 
         // CUSTOM
         protected MaterialProperty sdf_Tex = null;
@@ -543,6 +553,9 @@ namespace UnityEditor.Rendering.Toon
             outlineTex = FindProperty(ShaderProp_OutlineTex, props, false);
             bakedNormal = FindProperty("_BakedNormal", props, false);
 
+            // Glitter
+            glitter_Tex = FindProperty("_GlitterColorTex", props);
+            glitterColor = FindProperty("_GlitterColor", props);
 
             // CUSTOM
             sdf_Tex = FindProperty("_SDF_Tex", props);
@@ -633,6 +646,7 @@ namespace UnityEditor.Rendering.Toon
             public static readonly GUIContent angelRingFoldout = EditorGUIUtility.TrTextContent("Angel Ring Projection Settings", "Angel ring projection settings. A kind of specular specialized for hairs.");
             public static readonly GUIContent emissionFoldout = EditorGUIUtility.TrTextContent("Emission Settings", "Emission settings. Textures, animations and so on.");
             public static readonly GUIContent outlineFoldout = EditorGUIUtility.TrTextContent("Outline Settings", "Outline settings. Such as width, colors and so on.");
+            public static readonly GUIContent glitterFoldout = EditorGUIUtility.TrTextContent("Glitter Settings", "Glitter settings.");
             public static readonly GUIContent tessellationFoldout = EditorGUIUtility.TrTextContent("Tessellation Settings", "Tessellation settings for DX11, DX12 and Mac  Metal.");
             public static readonly GUIContent maskRenderingFoldout = EditorGUIUtility.TrTextContent("Mask Rendering Settings", "Mask rendering setting, controlled by Visual Compositor.");
             public static readonly GUIContent lightEffectivenessFoldout = EditorGUIUtility.TrTextContent("Scene Light Effectiveness Settings", "Scene light effectiveness to each parameter.");
@@ -728,6 +742,15 @@ namespace UnityEditor.Rendering.Toon
             public static readonly GUIContent emissionAnimationText = new GUIContent("Emission Map Animation", "When Enabled, the UV and Color of the Emission Map are animated.");
             public static readonly GUIContent outlineModeText = new GUIContent("Outline Mode", "Specifies how the inverted-outline object is spawned.");
             public static readonly GUIContent limitLightIntensityText = new GUIContent("Limit Light Intensity", "Limit the brightness of the light to 1 to avoid white-out.");
+
+            // Glitter
+            public static readonly GUIContent glitterText = new GUIContent("Glitter", "Enables the use of Glitter.");
+            public static readonly GUIContent glitterBackfaceMaskText = new GUIContent("Backface Mask", "Enables the backface mask of Glitter.");
+            public static readonly GUIContent glitterTransparencyText = new GUIContent("Apply Transparency", "Enables the transparency of Glitter.");
+            public static readonly GUIContent glitterDensityText = new GUIContent("Density", "Controls the density of Glitter.");
+            public static readonly GUIContent glitterParticleSizeText = new GUIContent("Particle Size", "Controls the size of glitter particle.");
+            public static readonly GUIContent glitterSamplerText = new GUIContent("Color/Mask", "Glitter Color/Mask Texture.");
+
             
             // ----------------------------------------------------- CUSTOM
             public static readonly GUIContent sdfSamplerText = new GUIContent("SDF Texture", "SDF : Texture(RGBA) - RGB:SDF & A:ShadowMask Default:White");
@@ -908,6 +931,30 @@ namespace UnityEditor.Rendering.Toon
                 label: "Adjust Rim Light Area", "Increasing this value narrows the area of influence of Rim Light.",
                 propName: "_RimLight_InsideMask", defaultValue: 0.0001f, min: 0.0001f, max: 1);
 
+            public static readonly RangeProperty glitterMainStrengthText = new RangeProperty(
+                label: "Main Color Power", tooltip: "Controls the strength of the main glitter color.",
+                propName: "_GlitterMainStrength", defaultValue: 0, min: 0, max: 1);
+
+            public static readonly RangeProperty glitterNormalStrengthText = new RangeProperty(
+                label: "Normal Map Strength", tooltip: "Controls the normal map strength.",
+                propName: "_GlitterNormalStrength", defaultValue: 1, min: 0, max: 1);
+
+            public static readonly RangeProperty glitterScaleRandomizeText = new RangeProperty(
+                label: "Randomize (Size)", tooltip: "Controls the size of randomization.",
+                propName: "_GlitterScaleRandomize", defaultValue: 0, min: 0, max: 1);
+
+            public static readonly RangeProperty glitterColorRandomnessText = new RangeProperty(
+                label: "Color Randomness", tooltip: "Controls the color randomness.",
+                propName: "_GlitterColorRandomness", defaultValue: 0, min: 0, max: 1);
+
+            public static readonly RangeProperty glitterEnableLightingText = new RangeProperty(
+                label: "Enable Lighting", tooltip: "Controls the lighting contribution strength.",
+                propName: "_GlitterEnableLighting", defaultValue: 1, min: 0, max: 1);
+
+            public static readonly RangeProperty glitterShadowMaskText = new RangeProperty(
+                label: "Shadow Mask", tooltip: "Controls the shadow mask strength.",
+                propName: "_GlitterShadowMask", defaultValue: 0, min: 0, max: 1);
+
             // Float properties
             public static readonly FloatProperty baseSpeedText = new FloatProperty(label: "Base Speed (Time)", 
                 tooltip: "Specifies the base update speed of scroll animation. If the value is 1, it will be updated in 1 second. Specifying a value of 2 results in twice the speed of a value of 1, so it will be updated in 0.5 seconds.", 
@@ -936,6 +983,26 @@ namespace UnityEditor.Rendering.Toon
             public static readonly FloatProperty colorShiftSpeedText = new FloatProperty(label: "Color Shifting Speed (Time)",
                 tooltip: "Sets the reference speed for color shift. When the value is 1, one cycle should take around 6 seconds.",
                 propName: "_ColorShift_Speed", defaultValue: 0);
+
+            public static readonly FloatProperty glitterSensitivityText = new FloatProperty(label: "Sensitivity",
+                tooltip: "Controls the sensitivity of glitter effect.",
+                propName: "_GlitterSensitivity", defaultValue: 100);
+
+            public static readonly FloatProperty glitterBlinkSpeedText = new FloatProperty(label: "Blink Speed",
+                tooltip: "Controls the blink speed of glitter effect.",
+                propName: "_GlitterBlinkSpeed", defaultValue: 0.1f);
+
+            public static readonly FloatProperty glitterAngleLimitText = new FloatProperty(label: "Angle Limit",
+                tooltip: "Controls the angle limitation of glitter effect.",
+                propName: "_GlitterAngleLimit", defaultValue: 0);
+                
+            public static readonly FloatProperty glitterLightDirectionText = new FloatProperty(label: "Light Direction Strength",
+                tooltip: "Controls the strength of light direction contribution to glitter effect.",
+                propName: "_GlitterLightDirection", defaultValue: 0);
+
+            public static readonly FloatProperty glitterPostContrastText = new FloatProperty(label: "Post Contrast",
+                tooltip: "Controls the post contrast strength of glitter effect.",
+                propName: "_GlitterPostContrast", defaultValue: 1);
 
             // Color prperties
             public static readonly ColorProperty viewShiftText = new ColorProperty(label: "Shifting Target Color",
@@ -1015,6 +1082,7 @@ namespace UnityEditor.Rendering.Toon
             m_MaterialScopeList.RegisterHeaderScope(Styles.angelRingFoldout, Expandable.AngelRing, GUI_AngelRing, (uint)UTS_Mode.ShadingGradeMap, (uint)UTS_TransparentMode.Off, isTessellation: 0);
             m_MaterialScopeList.RegisterHeaderScope(Styles.emissionFoldout, Expandable.Emission, GUI_Emissive, (uint)UTS_Mode.ThreeColorToon, (uint)UTS_TransparentMode.Off, isTessellation: 0);
             m_MaterialScopeList.RegisterHeaderScope(Styles.outlineFoldout, Expandable.Outline, GUI_Outline, (uint)UTS_Mode.ThreeColorToon, (uint)UTS_TransparentMode.Off, isTessellation: 0);
+            m_MaterialScopeList.RegisterHeaderScope(Styles.glitterFoldout, Expandable.Glitter, GUI_Glitter, (uint)UTS_Mode.ThreeColorToon, (uint)UTS_TransparentMode.Off, isTessellation: 0);
 
             m_MaterialScopeList.RegisterHeaderScope(Styles.tessellationFoldout, Expandable.TessellationLegacy, GUI_Tessellation, (uint)UTS_Mode.ThreeColorToon, (uint)UTS_TransparentMode.Off, isTessellation: 1);
             m_MaterialScopeList.RegisterHeaderScope(Styles.tessellationFoldout, Expandable.TessellationHDRP, GUI_TessellationHDRP, (uint)UTS_Mode.ThreeColorToon, (uint)UTS_TransparentMode.Off, isTessellation: 1);
@@ -2448,6 +2516,51 @@ namespace UnityEditor.Rendering.Toon
                 }
                 EditorGUI.EndDisabledGroup(); //!isOutlineEnabled
             }
+            EditorGUI.indentLevel--;
+
+            EditorGUILayout.Space();
+        }
+
+        void GUI_Glitter(Material material)
+        {
+            var isGlitterEnabled = GUI_Toggle(material, Styles.glitterText, ShaderProp_Glitter, MaterialGetInt(material, ShaderProp_Glitter) != 0);
+            EditorGUI.indentLevel++;
+            EditorGUI.BeginDisabledGroup(!isGlitterEnabled);
+            {
+                m_MaterialEditor.TexturePropertySingleLine(Styles.glitterSamplerText, glitter_Tex, glitterColor);
+                EditorGUI.indentLevel++;
+                m_MaterialEditor.TextureScaleOffsetProperty(glitter_Tex);
+                EditorGUI.indentLevel--;
+
+                GUI_RangeProperty(material, Styles.glitterMainStrengthText);
+                GUI_RangeProperty(material, Styles.glitterEnableLightingText);
+                GUI_RangeProperty(material, Styles.glitterShadowMaskText);
+                // GUI_Toggle(material, Styles.glitterBackfaceMaskText, ShaderProp_GlitterBackfaceMask, MaterialGetInt(material, ShaderProp_GlitterBackfaceMask) != 0);
+                GUI_Toggle(material, Styles.glitterTransparencyText, ShaderProp_GlitterApplyTransparency, MaterialGetInt(material, ShaderProp_GlitterApplyTransparency) != 0);
+
+
+                var size = material.GetFloat("_GlitterParticleSize");
+                size = size == 0.0f ? 0.0f : Mathf.Sqrt(size);
+                size = EditorGUILayout.Slider(Styles.glitterParticleSizeText, size, 0f, 2.0f);
+                GUI_RangeProperty(material, Styles.glitterScaleRandomizeText);
+
+                float density = Mathf.Sqrt(1.0f / material.GetFloat("_GlitterContrast")) / 1.5f;
+                density = EditorGUILayout.Slider(Styles.glitterDensityText, density, 0.001f, 1.0f);
+                if(EditorGUI.EndChangeCheck())
+                {
+                    material.SetFloat("_GlitterParticleSize", size * size);
+                    material.SetFloat("_GlitterContrast", 1.0f / (density * density * 1.5f * 1.5f));
+                }
+
+                GUI_FloatProperty(material, Styles.glitterSensitivityText);
+                GUI_FloatProperty(material, Styles.glitterBlinkSpeedText);
+                GUI_FloatProperty(material, Styles.glitterAngleLimitText);
+                GUI_FloatProperty(material, Styles.glitterLightDirectionText);
+                GUI_RangeProperty(material, Styles.glitterColorRandomnessText);
+                GUI_RangeProperty(material, Styles.glitterNormalStrengthText);
+                GUI_FloatProperty(material, Styles.glitterPostContrastText);
+            }
+            EditorGUI.EndDisabledGroup();
             EditorGUI.indentLevel--;
 
             EditorGUILayout.Space();

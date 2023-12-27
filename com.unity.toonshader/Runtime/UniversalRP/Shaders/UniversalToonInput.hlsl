@@ -202,6 +202,25 @@ half _BumpScale;
 half _OcclusionStrength;
 half _Surface;
 
+// Glitter
+half _Glitter;
+half _GlitterMainStrength;
+half _GlitterEnableLighting;
+half _GlitterBackfaceMask;
+half _GlitterApplyTransparency;
+half _GlitterShadowMask;
+half _GlitterParticleSize;
+half _GlitterScaleRandomize;
+half _GlitterContrast;
+half _GlitterSensitivity;
+half _GlitterBlinkSpeed;
+half _GlitterAngleLimit;
+half _GlitterLightDirection;
+half _GlitterColorRandomness;
+half _GlitterNormalStrength;
+half _GlitterPostContrast;
+half4 _GlitterColor;
+
 
 // CUSTOM
 float4 _SDF_Tex_ST;
@@ -263,6 +282,7 @@ sampler2D _BakedNormal;
 TEXTURE2D(_OcclusionMap);       SAMPLER(sampler_OcclusionMap);
 TEXTURE2D(_MetallicGlossMap);   SAMPLER(sampler_MetallicGlossMap);
 TEXTURE2D(_SpecGlossMap);       SAMPLER(sampler_SpecGlossMap);
+TEXTURE2D(_GlitterColorTex);
 
 
 /// CUSTOM
