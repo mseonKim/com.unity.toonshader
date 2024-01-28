@@ -1,7 +1,8 @@
-float3 AdditionalLighting(UtsLight additionalLight, float4 _MainTex_var, float2 Set_UV0, float3 normalDir, float3 normalDirection, float3 viewDirection, float3 worldPos, float opacity, uint lightIndex = 0)
+float3 AdditionalLighting(UtsLight additionalLight, float4 _MainTex_var, float2 Set_UV0, float3 normalDir, float3 normalDirection, float3 viewDirection, float3 worldPos, float opacity, out half3 attenuatedLightColor, half faceSDFAtten = 1, half faceSDFMask = 0, uint lightIndex = 0)
 {
     float notDirectional = 1.0f; //_WorldSpaceLightPos0.w of the legacy code.
     half3 additionalLightColor = GetLightColor(additionalLight);
+    attenuatedLightColor = additionalLightColor;
     float3 lightDirection = additionalLight.direction;
     //v.2.0.5: 
     half3 addPassLightColor = additionalLightColor;
@@ -64,9 +65,10 @@ float3 AdditionalLighting(UtsLight additionalLight, float4 _MainTex_var, float2 
     Glitter(finalColor, opacity, viewDirection, normalDir, normalDirection, Set_UV0, Set_FinalBaseColor, additionalLight.shadowAttenuation, lightDirection, lightColor);
 
 #if _USE_CHAR_SHADOW    // CUSTOM (Character Shadow)
-    half ssShadowAtten = GetCharAdditionalShadow(worldPos, opacity, lightIndex);
+    half ssShadowAtten = GetCharAdditionalShadow(worldPos, opacity, lightIndex, faceSDFAtten, faceSDFMask);
     // finalColor = lerp(finalColor, 0, ssShadowAtten);
     finalColor = lerp(finalColor, finalShadeColor, ssShadowAtten);
+    attenuatedLightColor = lerp(attenuatedLightColor, 0, ssShadowAtten);
     // finalColor = lerp(finalColor, dotNL > 0 ? finalShadeColor * 0.1 : 0, ssShadowAtten);
     // finalColor = lerp(finalColor, lerp(finalShadeColor, 0, Set_FinalShadowMask), ssShadowAtten);
 #endif
@@ -77,10 +79,11 @@ float3 AdditionalLighting(UtsLight additionalLight, float4 _MainTex_var, float2 
     return finalColor;
 }
 
-float3 AdditionalLightingShadingGradeMap(UtsLight additionalLight, float4 _MainTex_var, float2 Set_UV0, float3 normalDir, float3 normalDirection, float3 viewDirection, float3 worldPos, float opacity, uint lightIndex = 0)
+float3 AdditionalLightingShadingGradeMap(UtsLight additionalLight, float4 _MainTex_var, float2 Set_UV0, float3 normalDir, float3 normalDirection, float3 viewDirection, float3 worldPos, float opacity, out half3 attenuatedLightColor, half faceSDFAtten = 1, half faceSDFMask = 0, uint lightIndex = 0)
 {
     float notDirectional = 1.0f; //_WorldSpaceLightPos0.w of the legacy code.
     half3 additionalLightColor = GetLightColor(additionalLight);
+    attenuatedLightColor = additionalLightColor;
     float3 lightDirection = additionalLight.direction;
     //v.2.0.5: 
     half3 addPassLightColor = additionalLightColor;
@@ -152,8 +155,9 @@ float3 AdditionalLightingShadingGradeMap(UtsLight additionalLight, float4 _MainT
     Glitter(finalColor, opacity, viewDirection, normalDir, normalDirection, Set_UV0, Set_FinalBaseColor, additionalLight.shadowAttenuation, lightDirection, lightColor);
 
 #if _USE_CHAR_SHADOW    // CUSTOM (Character Shadow)
-    half ssShadowAtten = GetCharAdditionalShadow(worldPos, opacity, lightIndex);
+    half ssShadowAtten = GetCharAdditionalShadow(worldPos, opacity, lightIndex, faceSDFAtten, faceSDFMask);
     finalColor = lerp(finalColor, finalShadeColor, ssShadowAtten);
+    attenuatedLightColor = lerp(attenuatedLightColor, 0, ssShadowAtten);
 #endif
 
 #if _USE_SSS    // CUSTOM (SSS)

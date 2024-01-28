@@ -224,12 +224,12 @@ half4 _GlitterColor;
 
 // CUSTOM
 float4 _SDF_Tex_ST;
-float4 _SDF_ShadowMask_Tex_ST;
 half4 _FaceForward;
 half4 _FaceUp;
 float _MinLightIntensity;
 float _AdditionalShadowDimmer;
-float _SDF_BlurIntensity;
+float _RcpSDFSize;
+float _SDF_Feather;
 float _SDF_Offset;
 float _SDF_Reverse;
 float4 _Hair_Highlight_Tex_ST;

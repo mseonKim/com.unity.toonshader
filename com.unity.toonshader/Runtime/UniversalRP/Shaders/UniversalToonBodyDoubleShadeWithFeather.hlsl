@@ -158,9 +158,12 @@
                 // float3 Set_FinalBaseColor = lerp(Set_BaseColor,Set_1st_ShadeColor,Set_FinalShadowMask); // Final Color
 
                 // CUSTOM - Face SDF
+                half sdfAtten = 1;
+                half sdfMask = 0;
 #if _USE_SDF
                 // half3 receivedShadowColor = lerp(Set_1st_ShadeColor, Set_BaseColor, LinearStep(0.5, 0.5, shadowAttenuation));
-                half sdfAtten = GetFaceSDFAtten(lightDirection, Set_UV0);
+                sdfAtten = GetFaceSDFAtten(lightDirection, Set_UV0);
+                sdfMask = SAMPLE_TEXTURE2D(_SDF_Tex, sampler_SDF_Tex, TRANSFORM_TEX(Set_UV0, _SDF_Tex)).a;
                 half3 sdfColor = lerp(finalShadeColor, Set_BaseColor, sdfAtten);
                 // Set_FinalBaseColor = min(sdfColor, receivedShadowColor);
                 Set_FinalBaseColor = sdfColor;
@@ -175,6 +178,56 @@
     #endif
 #endif
 
+                float3 pointLightColor = 0;
+                float3 accLightColor = Set_LightColor;  // to use for high color & rim color & matcap
+  #ifdef _ADDITIONAL_LIGHTS
+
+                int pixelLightCount = GetAdditionalLightsCount();
+
+#if USE_FORWARD_PLUS
+                for (uint lightIndex = 0; lightIndex < min(URP_FP_DIRECTIONAL_LIGHTS_COUNT, MAX_VISIBLE_LIGHTS); lightIndex++)
+                {
+                    FORWARD_PLUS_SUBTRACTIVE_LIGHT_CHECK
+                    int iLight = lightIndex;
+                    // if (iLight != i.mainLightID)
+                    {
+                        UtsLight additionalLight = GetUrpMainUtsLight(0,0);
+                        additionalLight = GetAdditionalUtsLight(iLight, inputData.positionWS,i.positionCS);
+
+                        half3 attenLightColor;
+                        half3 finalColor = AdditionalLighting(additionalLight, _MainTex_var, Set_UV0, i.normalDir, normalDirection, viewDirection, inputData.positionWS, opacity, attenLightColor, sdfAtten, sdfMask);
+                        accLightColor += attenLightColor;
+                        pointLightColor += finalColor;
+                    }
+                }
+#endif  // USE_FORWARD_PLUS
+
+                // determine main light inorder to apply light culling
+                // when the loop counter start from negative value, MAINLIGHT_IS_MAINLIGHT = -1, some compiler doesn't work well.
+                // for (int iLight = MAINLIGHT_IS_MAINLIGHT; iLight < pixelLightCount ; ++iLight)
+                UTS_LIGHT_LOOP_BEGIN(pixelLightCount - MAINLIGHT_IS_MAINLIGHT)
+#if USE_FORWARD_PLUS
+                    int iLight = lightIndex;
+#else
+                    int iLight = loopCounter + MAINLIGHT_IS_MAINLIGHT;
+                    if (iLight != i.mainLightID)
+#endif
+                    {
+                        UtsLight additionalLight = GetUrpMainUtsLight(0,0);
+                        if (iLight != -1)
+                        {
+                            additionalLight = GetAdditionalUtsLight(iLight, inputData.positionWS,i.positionCS);
+                        }
+
+                        half3 attenLightColor;
+                        half3 finalColor = AdditionalLighting(additionalLight, _MainTex_var, Set_UV0, i.normalDir, normalDirection, viewDirection, inputData.positionWS, opacity, attenLightColor, sdfAtten, sdfMask, iLight);
+                        accLightColor += attenLightColor;
+                        pointLightColor += finalColor;
+                    }
+                UTS_LIGHT_LOOP_END
+  
+  #endif
+
                 float4 _Set_HighColorMask_var = tex2D(_Set_HighColorMask, TRANSFORM_TEX(Set_UV0, _Set_HighColorMask));
 
                 float _Specular_var = 0.5*dot(halfDirection,lerp( i.normalDir, normalDirection, _Is_NormalMapToHighColor ))+0.5; //  Specular                
@@ -185,13 +238,13 @@
 
                 float4 _HighColor_Tex_var = tex2D(_HighColor_Tex, TRANSFORM_TEX(Set_UV0, _HighColor_Tex));
 
-                float3 _HighColor_var = (lerp( (_HighColor_Tex_var.rgb*_HighColor.rgb), ((_HighColor_Tex_var.rgb*_HighColor.rgb)*Set_LightColor), _Is_LightColor_HighColor )*_TweakHighColorMask_var);
+                float3 _HighColor_var = (lerp( (_HighColor_Tex_var.rgb*_HighColor.rgb), ((_HighColor_Tex_var.rgb*_HighColor.rgb)*accLightColor), _Is_LightColor_HighColor )*_TweakHighColorMask_var);
                 //Composition: 3 Basic Colors and HighColor as Set_HighColor
                 float3 Set_HighColor = (lerp(SATURATE_IF_SDR((Set_FinalBaseColor-_TweakHighColorMask_var)), Set_FinalBaseColor, lerp(_Is_BlendAddToHiColor,1.0,_Is_SpecularToHighColor) )+lerp( _HighColor_var, (_HighColor_var*((1.0 - Set_FinalShadowMask)+(Set_FinalShadowMask*_TweakHighColorOnShadow))), _Is_UseTweakHighColorOnShadow ));
 
                 float4 _Set_RimLightMask_var = tex2D(_Set_RimLightMask, TRANSFORM_TEX(Set_UV0, _Set_RimLightMask));
 
-                float3 _Is_LightColor_RimLight_var = lerp( _RimLightColor.rgb, (_RimLightColor.rgb*Set_LightColor), _Is_LightColor_RimLight );
+                float3 _Is_LightColor_RimLight_var = lerp( _RimLightColor.rgb, (_RimLightColor.rgb*accLightColor), _Is_LightColor_RimLight );
                 float _RimArea_var = abs(1.0 - dot(lerp( i.normalDir, normalDirection, _Is_NormalMapToRimLight ),viewDirection));
                 float _RimLightPower_var = pow(_RimArea_var,exp2(lerp(3,0,_RimLight_Power)));
                 float _Rimlight_InsideMask_var = saturate(lerp( (0.0 + ( (_RimLightPower_var - _RimLight_InsideMask) * (1.0 - 0.0) ) / (1.0 - _RimLight_InsideMask)), step(_RimLight_InsideMask,_RimLightPower_var), _RimLight_FeatherOff ));
@@ -251,7 +304,7 @@
                 //MatcapMask
                 float _Tweak_MatcapMaskLevel_var = saturate(lerp(_Set_MatcapMask_var.g, (1.0 - _Set_MatcapMask_var.g), _Inverse_MatcapMask) + _Tweak_MatcapMaskLevel);
                 //
-                float3 _Is_LightColor_MatCap_var = _MatCapColor.a * lerp( (_MatCap_Sampler_var.rgb*_MatCapColor.rgb), ((_MatCap_Sampler_var.rgb*_MatCapColor.rgb)*Set_LightColor), _Is_LightColor_MatCap );
+                float3 _Is_LightColor_MatCap_var = _MatCapColor.a * lerp( (_MatCap_Sampler_var.rgb*_MatCapColor.rgb), ((_MatCap_Sampler_var.rgb*_MatCapColor.rgb)*accLightColor), _Is_LightColor_MatCap );
                 //v.2.0.6 : ShadowMask on Matcap in Blend mode : multiply
                 float3 Set_MatCap = lerp( _Is_LightColor_MatCap_var, (_Is_LightColor_MatCap_var*((1.0 - Set_FinalShadowMask)+(Set_FinalShadowMask*_TweakMatCapOnShadow)) + lerp(Set_HighColor*Set_FinalShadowMask*(1.0-_TweakMatCapOnShadow), float3(0.0, 0.0, 0.0), _Is_BlendAddToMatCap)), _Is_UseTweakMatCapOnShadow );
 
@@ -287,7 +340,7 @@
                 float _Tweak_Matcap2MaskLevel_var = saturate(lerp(_Set_MatcapMask2_var.g, (1.0 - _Set_MatcapMask2_var.g), _Inverse_Matcap2Mask) + _Tweak_Matcap2MaskLevel);
                 if (_Tweak_Matcap2MaskLevel_var > 0)
                 {
-                    _Is_LightColor_MatCap_var = _MatCapColor2.a * lerp( (_MatCap_Sampler2_var.rgb*_MatCapColor2.rgb), ((_MatCap_Sampler2_var.rgb*_MatCapColor2.rgb)*Set_LightColor), _Is_LightColor_MatCap );
+                    _Is_LightColor_MatCap_var = _MatCapColor2.a * lerp( (_MatCap_Sampler2_var.rgb*_MatCapColor2.rgb), ((_MatCap_Sampler2_var.rgb*_MatCapColor2.rgb)*accLightColor), _Is_LightColor_MatCap );
                     Set_MatCap = lerp( _Is_LightColor_MatCap_var, (_Is_LightColor_MatCap_var*((1.0 - Set_FinalShadowMask)+(Set_FinalShadowMask*_TweakMatCap2OnShadow)) + lerp(Set_HighColor*Set_FinalShadowMask*(1.0-_TweakMatCap2OnShadow), float3(0.0, 0.0, 0.0), _Is_BlendAddToMatCap2)), _Is_UseTweakMatCap2OnShadow );
                     matCapColorOnAddMode = _RimLight_var+Set_MatCap*_Tweak_Matcap2MaskLevel_var;
                     _Tweak_MatcapMaskLevel_var_MultiplyMode = _Tweak_Matcap2MaskLevel_var * lerp (1.0, (1.0 - (Set_FinalShadowMask)*(1.0 - _TweakMatCap2OnShadow)), _Is_UseTweakMatCap2OnShadow);
@@ -307,7 +360,7 @@
                 // CUSTOM (Character Shadowmap)
                 half ssShadowAtten = 0;
 #if _USE_CHAR_SHADOW
-                ssShadowAtten = GetCharMainShadow(inputData.positionWS, Set_UV0, opacity);
+                ssShadowAtten = GetCharMainShadow(inputData.positionWS, Set_UV0, opacity, sdfAtten, sdfMask);
                 finalColor = lerp(finalColor, finalShadeColor, ssShadowAtten);
 #endif
 
@@ -322,52 +375,6 @@
                 float3 envLightColor = envColor.rgb;
 
                 float envLightIntensity = 0.299*envLightColor.r + 0.587*envLightColor.g + 0.114*envLightColor.b <1 ? (0.299*envLightColor.r + 0.587*envLightColor.g + 0.114*envLightColor.b) : 1;
-
-
-                float3 pointLightColor = 0;
-  #ifdef _ADDITIONAL_LIGHTS
-
-                int pixelLightCount = GetAdditionalLightsCount();
-
-#if USE_FORWARD_PLUS
-                for (uint lightIndex = 0; lightIndex < min(URP_FP_DIRECTIONAL_LIGHTS_COUNT, MAX_VISIBLE_LIGHTS); lightIndex++)
-                {
-                    FORWARD_PLUS_SUBTRACTIVE_LIGHT_CHECK
-                    int iLight = lightIndex;
-                    // if (iLight != i.mainLightID)
-                    {
-                        UtsLight additionalLight = GetUrpMainUtsLight(0,0);
-                        additionalLight = GetAdditionalUtsLight(iLight, inputData.positionWS,i.positionCS);
-
-                        half3 finalColor = AdditionalLighting(additionalLight, _MainTex_var, Set_UV0, i.normalDir, normalDirection, viewDirection, inputData.positionWS, opacity);
-                        pointLightColor += finalColor;
-                    }
-                }
-#endif  // USE_FORWARD_PLUS
-
-                // determine main light inorder to apply light culling
-                // when the loop counter start from negative value, MAINLIGHT_IS_MAINLIGHT = -1, some compiler doesn't work well.
-                // for (int iLight = MAINLIGHT_IS_MAINLIGHT; iLight < pixelLightCount ; ++iLight)
-                UTS_LIGHT_LOOP_BEGIN(pixelLightCount - MAINLIGHT_IS_MAINLIGHT)
-#if USE_FORWARD_PLUS
-                    int iLight = lightIndex;
-#else
-                    int iLight = loopCounter + MAINLIGHT_IS_MAINLIGHT;
-                    if (iLight != i.mainLightID)
-#endif
-                    {
-                        UtsLight additionalLight = GetUrpMainUtsLight(0,0);
-                        if (iLight != -1)
-                        {
-                            additionalLight = GetAdditionalUtsLight(iLight, inputData.positionWS,i.positionCS);
-                        }
-
-                        half3 finalColor = AdditionalLighting(additionalLight, _MainTex_var, Set_UV0, i.normalDir, normalDirection, viewDirection, inputData.positionWS, opacity, iLight);
-                        pointLightColor += finalColor;
-                    }
-                UTS_LIGHT_LOOP_END
-  
-  #endif
 
 
 //v.2.0.7

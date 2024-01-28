@@ -517,11 +517,12 @@ Shader "Toon" {
         // CUSTOM
         _MinLightIntensity("Min Light Intensity", Range(0.01, 1)) = 0.1
         _AdditionalShadowDimmer("Additional Shadow Dimmer", Range(0, 1)) = 0.1
-        _SDF_Tex("SDF_Tex", 2D) = "white" {}    // Alpha: SDF_ShadowMask for shadow ray
+        _SDF_Tex("SDF_Tex", 2D) = "white" {}    // Alpha: SDF_ShadowMask for shadowmap
         _SDF_Offset("SDF_Offset", Float) = 0.0
         _FaceForward("Face Forward Vector", Vector) = (0, 0, 1, 0)
         _FaceUp("Face Up Vector", Vector) = (0, 1, 0, 0)
-        _SDF_BlurIntensity("SDF Blur Intensity", Range(0.0, 0.02)) = 0.0001 // = 1.0 / Texture.size
+        _RcpSDFSize("Rcp SDF Texture Size", Range(0.0, 0.008)) = 0.004 // = 1.0 / Texture.size
+        _SDF_Feather("SDF Feather", Range(0.0, 0.01)) = 0.0
         [ToggleUI] _SDF_Reverse("One Minus Texture Value", Float) = 0.0
         _Hair_Highlight_Tex("Hair Highlight Tex", 2D) = "white" {}
         _HairHiUVOffset("Hair Highlight UV Offset", Range(0.0, 0.2)) = 0.05

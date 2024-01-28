@@ -322,10 +322,14 @@
 #endif
                 //v.2.0.5
 #ifndef _USE_OIT_OUTLINE // CUSTOM - OIT Outline
+    #ifdef _USE_OIT
+                return 0;
+    #else
                 if (_ZOverDrawMode > 0.99f)
                 {
                     return float4(1.0f, 1.0f, 1.0f, 1.0f);  // but nothing should be drawn except Z value as colormask is set to 0
                 }
+    #endif
 #endif
                 _Color = _BaseColor;
                 float4 objPos = mul ( unity_ObjectToWorld, float4(0,0,0,1) );

@@ -227,6 +227,7 @@ namespace UnityEditor.Rendering.Toon
         internal const string CustomShaderPropUse_OIT = "_USE_OIT";
         internal const string CustomShaderPropUse_OIT_OUTLINE = "_USE_OIT_OUTLINE";
         internal const string CustomShaderPropUse_SUBSURFACE_SCATTERING = "_USE_SSS";
+        internal const string CustomShaderPropUse_MATERIAL_TRANSFORM = "_UseTransformerMask";
         ///
 
 
@@ -1037,9 +1038,13 @@ namespace UnityEditor.Rendering.Toon
                 tooltip: "",
                 propName: "_SDF_Offset", defaultValue: 0);
 
-            public static readonly RangeProperty faceSDFBlurIntensityText = new RangeProperty(
-                label: "Face SDF Blur Intensity", "",
-                propName: "_SDF_BlurIntensity", defaultValue: 0.0025f, min: 0, max: 0.02f);
+            public static readonly RangeProperty faceSDFRcpSizeText = new RangeProperty(
+                label: "Rcp SDF Texture Size", "1 / TextureSize.",
+                propName: "_RcpSDFSize", defaultValue: 0.004f, min: 0.0001f, max: 0.008f);
+
+            public static readonly RangeProperty faceSDFFeatherText = new RangeProperty(
+                label: "SDF Feather", "",
+                propName: "_SDF_Feather", defaultValue: 0, min: 0, max: 0.01f);
 
             public static readonly RangeProperty hairHighlightUVOffset = new RangeProperty(
                 label: "Hair Highlight UV Offset", "",
@@ -2684,7 +2689,8 @@ namespace UnityEditor.Rendering.Toon
                 m_MaterialEditor.TexturePropertySingleLine(Styles.sdfSamplerText, sdf_Tex);
                 m_MaterialEditor.TextureScaleOffsetProperty(sdf_Tex);
                 GUI_FloatProperty(material, Styles.faceSDFOffsetText);
-                GUI_RangeProperty(material, Styles.faceSDFBlurIntensityText);
+                GUI_RangeProperty(material, Styles.faceSDFFeatherText);
+                GUI_RangeProperty(material, Styles.faceSDFRcpSizeText);
                 GUI_Toggle(material, Styles.faceSDFReverseText, "_SDF_Reverse", MaterialGetInt(material, "_SDF_Reverse") != 0);
                 EditorGUI.indentLevel--;
             }

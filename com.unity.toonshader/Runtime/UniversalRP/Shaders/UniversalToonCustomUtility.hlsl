@@ -11,8 +11,8 @@
 // 2. _SDF_Offset
 // 3. _FaceForward
 // 4. _FaceUp
-// 5. _SDF_BlurIntensity
-// 6. _SDF_ShadowMask_Tex
+// 5. _RcpSDFSize
+// 6. _SDF_Feather
 // 7. _Hair_Highlight_Tex
 // 8. _HeadWorldPos
 // 9. _HeadUpWorldDir
@@ -28,8 +28,51 @@ half LinearStep(float m, float M, float x)
     return saturate((x - m) / (M - m));
 }
 
+// Reference: UE5 SpiralBlur-Texture
+half SpiralBlur(TEXTURE2D_PARAM(tex, samplerTex), float2 UV, float Distance, float DistanceSteps, float RadialSteps, float RadialOffset, float KernelPower)
+{
+    half CurColor = 0;
+    float2 NewUV = UV;
+    int i = 0;
+    float StepSize = Distance / (int)DistanceSteps;
+    float CurDistance = 0;
+    float2 CurOffset = 0;
+    float SubOffset = 0;
+    // float TwoPi = 6.283185;
+    float accumdist = 0;
+
+    if (DistanceSteps < 1)
+    {
+        return SAMPLE_TEXTURE2D(tex, samplerTex, UV).r;		
+    }
+
+    while (i < (int)DistanceSteps)
+    {
+        CurDistance += StepSize;
+        for (int j = 0; j < (int)RadialSteps; j++)
+        {
+            SubOffset +=1;
+            CurOffset.x = cos(TWO_PI * (SubOffset / RadialSteps));
+            CurOffset.y = sin(TWO_PI * (SubOffset / RadialSteps));
+            NewUV.x = UV.x + CurOffset.x * CurDistance;
+            NewUV.y = UV.y + CurOffset.y * CurDistance;
+            float distpow = pow(CurDistance, KernelPower);
+            CurColor += SAMPLE_TEXTURE2D(tex, samplerTex, NewUV).r * distpow;		
+            accumdist += distpow;
+        }
+        SubOffset += RadialOffset;
+        i++;
+    }
+    CurColor = CurColor;
+    CurColor /= accumdist;
+    return CurColor;
+}
+
 half GetFaceSDFAtten(half3 lightDir, float2 uv)
 {
+#if _USE_CHAR_SHADOW
+    lightDir = _BrightestLightDirection.xyz;
+#endif
     // Construct TBN based on face forward & up
     // Transform lightDir to TBN space
     half3 N = _FaceUp.xyz;
@@ -43,47 +86,54 @@ half GetFaceSDFAtten(half3 lightDir, float2 uv)
     half2 n = normalize(forwardT.xy);
     half NoL = dot(l, n);
 
-    // Find flip x
-    uv.x = lerp(-uv.x, uv.x, saturate(sign(lightT.y)));
+    if (NoL < 0)
+    {
+        return 0;
+    }
 
-    // Blur
-    float offset = _SDF_BlurIntensity;
-    half _SDF_var = SAMPLE_TEXTURE2D(_SDF_Tex, sampler_SDF_Tex, TRANSFORM_TEX(uv, _SDF_Tex)).r;
-    _SDF_var += SAMPLE_TEXTURE2D(_SDF_Tex, sampler_SDF_Tex, TRANSFORM_TEX(uv + float2(offset, offset), _SDF_Tex)).r;
-    _SDF_var += SAMPLE_TEXTURE2D(_SDF_Tex, sampler_SDF_Tex, TRANSFORM_TEX(uv + float2(0.0, offset), _SDF_Tex)).r;
-    _SDF_var += SAMPLE_TEXTURE2D(_SDF_Tex, sampler_SDF_Tex, TRANSFORM_TEX(uv + float2(-offset, offset), _SDF_Tex)).r;
-    _SDF_var += SAMPLE_TEXTURE2D(_SDF_Tex, sampler_SDF_Tex, TRANSFORM_TEX(uv + float2(offset, 0.0), _SDF_Tex)).r;
-    _SDF_var += SAMPLE_TEXTURE2D(_SDF_Tex, sampler_SDF_Tex, TRANSFORM_TEX(uv + float2(-offset, 0.0), _SDF_Tex)).r;
-    _SDF_var += SAMPLE_TEXTURE2D(_SDF_Tex, sampler_SDF_Tex, TRANSFORM_TEX(uv + float2(-offset, -offset), _SDF_Tex)).r;
-    _SDF_var += SAMPLE_TEXTURE2D(_SDF_Tex, sampler_SDF_Tex, TRANSFORM_TEX(uv + float2(0.0, -offset), _SDF_Tex)).r;
-    _SDF_var += SAMPLE_TEXTURE2D(_SDF_Tex, sampler_SDF_Tex, TRANSFORM_TEX(uv + float2(offset, -offset), _SDF_Tex)).r;
-    _SDF_var /= 9.0;
+    bool flipped = saturate(sign(lightT.y));
+
+    // Sample
+    half faceSdfAtten = SpiralBlur(TEXTURE2D_ARGS(_SDF_Tex, sampler_SDF_Tex), uv, _RcpSDFSize, 16, 8, 0.62, 1) + _SDF_Offset;
+
+    // Apply Flip
+    faceSdfAtten = lerp(1.0 - faceSdfAtten, faceSdfAtten, flipped);
     
     // Reverse if need
-    _SDF_var = lerp(_SDF_var, 1.0 - _SDF_var, _SDF_Reverse);
-    
-    // TODO: Blur Face Texture
-    return lerp(0.0, 1.0, (_SDF_var + _SDF_Offset) <= NoL);
+    faceSdfAtten = lerp(faceSdfAtten, 1.0 - faceSdfAtten, _SDF_Reverse);
+
+    faceSdfAtten = LinearStep(-_SDF_Feather, _SDF_Feather, NoL - faceSdfAtten);
+    return faceSdfAtten;
 }
 
 
-half GetCharMainShadow(float3 worldPos, float2 uv, float opacity)
+half GetCharMainShadow(float3 worldPos, float2 uv, float opacity, half sdfAtten = 1, half sdfMask = 0)
 {
 #if _USE_SDF
-    half _SDF_ShadowMask_var = SAMPLE_TEXTURE2D(_SDF_Tex, sampler_SDF_Tex, TRANSFORM_TEX(uv, _SDF_Tex)).a;
-    if (_SDF_ShadowMask_var > 0.01) // Ignore if masked
+    if (sdfMask > 0.01) // Ignore if masked
     {
-        return 0.0;
+        return 1.0 - sdfAtten;
     }
-#endif
-
+    return max(1.0 - sdfAtten, SampleCharacterAndTransparentShadow(worldPos, opacity));
+#else
     // Max(Shadowmap, TransparentShadowmap)
     return SampleCharacterAndTransparentShadow(worldPos, opacity);
+#endif
 }
 
-half GetCharAdditionalShadow(float3 worldPos, float opacity, uint lightIndex)
+half GetCharAdditionalShadow(float3 worldPos, float opacity, uint lightIndex, half sdfAtten = 1, half sdfMask = 0)
 {
+#if _USE_SDF
+    uint i;
+    ADDITIONAL_CHARSHADOW_CHECK(i, lightIndex);
+    if (sdfMask > 0.01) // Ignore if masked
+    {
+        return 1.0 - sdfAtten;
+    }
+    return max(1.0 - sdfAtten, SampleAdditionalCharacterAndTransparentShadow(worldPos, opacity, lightIndex));
+#else
     return SampleAdditionalCharacterAndTransparentShadow(worldPos, opacity, lightIndex);
+#endif
 }
 
 
@@ -131,12 +181,12 @@ half3 AdditionalOITTransmittance(float3 lightDir, float3 viewDir, float3 normal,
     uint i;
     ADDITIONAL_CHARSHADOW_CHECK(i, lightIndex)
 
-    float2 ssUV = TransformWorldToCharShadowCoord(worldPos, i).xy;
+    float2 ssUV = TransformWorldToCharShadowCoord(worldPos).xy;
 
     float NoL = saturate(dot(-lightDir, normal));
     NoL = LinearStep(0.49, 0.51, NoL);
     float o = 1.0 / 2048.0;   // Should be matched with atlas size
-    float tr = 1 - TransparentAttenuation(ssUV, opacity, i);
+    float tr = 1 - TransparentAttenuation(ssUV, opacity);
     float scale = 0.66;
 
     // lightColor : actual light color * attenuation

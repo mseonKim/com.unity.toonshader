@@ -13,15 +13,16 @@ namespace UTSCustom
         private string faceForwardVectorString = "_FaceForward";
         private string faceUpVectorString = "_FaceUp";
 
-        void OnValidate()
-        {
-            if (headFront != null && headCenter != null)
-            {
-                Vector3 dir = headFront.position - headCenter.position;
-                faceMaterial.SetVector(faceForwardVectorString, dir.normalized);
-            }
-        }
+        // void OnValidate()
+        // {
+        //     if (headFront != null && headCenter != null)
+        //     {
+        //         Vector3 dir = headFront.position - headCenter.position;
+        //         faceMaterial.SetVector(faceForwardVectorString, dir.normalized);
+        //     }
+        // }
 
+        [ExecuteAlways]
         // Update is called once per frame
         void Update()
         {
