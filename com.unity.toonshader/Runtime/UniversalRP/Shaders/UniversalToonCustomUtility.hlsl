@@ -68,6 +68,11 @@ half SpiralBlur(TEXTURE2D_PARAM(tex, samplerTex), float2 UV, float Distance, flo
     return CurColor;
 }
 
+
+#define COS_54 0.587
+#define COS_66 0.406
+#define COS_50 0.64278
+#define COS_70 0.34202
 half GetFaceSDFAtten(half3 lightDir, float2 uv)
 {
 #if _USE_CHAR_SHADOW
@@ -89,6 +94,20 @@ half GetFaceSDFAtten(half3 lightDir, float2 uv)
     if (NoL < 0)
     {
         return 0;
+    }
+
+    // To skip ugly facemask shadow
+    if (NoL > COS_70 && NoL < COS_50)
+    {
+        NoL = 0.5;
+        if (NoL > COS_54)
+        {
+            NoL = smoothstep(0.5, COS_50, NoL);
+        }
+        else if (NoL < COS_66)
+        {
+            NoL = smoothstep(COS_70, 0.5, NoL);
+        }
     }
 
     bool flipped = saturate(sign(lightT.y));
