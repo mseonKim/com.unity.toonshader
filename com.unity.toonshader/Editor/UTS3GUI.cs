@@ -1032,7 +1032,7 @@ namespace UnityEditor.Rendering.Toon
 
             public static readonly RangeProperty AdditionalShadowDimmerText = new RangeProperty(label: "Additional Shadow Dimmer",
                 tooltip: "Apply dimmer to additional shadow when the main light is active. If the color of main light is 0, additional shadow color will be 0.",
-                propName: "_AdditionalShadowDimmer", defaultValue: 0.1f, min: 0, max: 1f);
+                propName: "_AdditionalShadowDimmer", defaultValue: 1f, min: 0, max: 1f);
 
             public static readonly FloatProperty faceSDFOffsetText = new FloatProperty(label: "Face SDF Offset",
                 tooltip: "",

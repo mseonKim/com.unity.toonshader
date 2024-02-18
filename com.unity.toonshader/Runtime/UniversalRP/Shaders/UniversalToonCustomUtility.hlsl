@@ -216,7 +216,8 @@ half3 AdditionalOITTransmittance(float3 lightDir, float3 viewDir, float3 normal,
 half3 SubsurfaceScattering(float3 lightDir, float3 viewDir, float3 normal, half3 diffuse, half3 lightColor)
 {
     const float3 tr = float3(0.4, 0.25, 0.2);
-    float fLTDot = pow(saturate(dot(-lightDir + normal * _SSS_Normal_Distortion, viewDir)), _SSS_Power) * _SSS_Scale;
+    const float3 H = normalize(lightDir + normal * _SSS_Normal_Distortion);
+    float fLTDot = pow(saturate(dot(viewDir, -H)), _SSS_Power) * _SSS_Scale;
     // float fLTDot = pow(saturate(dot(-lightDir, normal)), power) * scale;
     if (fLTDot < 0)
     {

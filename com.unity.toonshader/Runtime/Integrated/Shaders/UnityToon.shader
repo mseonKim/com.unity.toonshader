@@ -516,7 +516,7 @@ Shader "Toon" {
         // --------------------------
         // CUSTOM
         _MinLightIntensity("Min Light Intensity", Range(0.01, 1)) = 0.1
-        _AdditionalShadowDimmer("Additional Shadow Dimmer", Range(0, 1)) = 0.1
+        _AdditionalShadowDimmer("Additional Shadow Dimmer", Range(0, 1)) = 1
         _SDF_Tex("SDF_Tex", 2D) = "white" {}    // Alpha: SDF_ShadowMask for shadowmap
         _SDF_Offset("SDF_Offset", Float) = 0.0
         _FaceForward("Face Forward Vector", Vector) = (0, 0, 1, 0)
@@ -1604,8 +1604,8 @@ Shader "Toon" {
             #pragma multi_compile _IS_OUTLINE_CLIPPING_NO _IS_OUTLINE_CLIPPING_YES
             #pragma multi_compile _OUTLINE_NML _OUTLINE_POS
             // CUSTOM
-            #pragma shader_feature _USE_OIT
-            #pragma shader_feature _USE_OIT_OUTLINE
+            #pragma shader_feature_local _USE_OIT
+            #pragma shader_feature_local _USE_OIT_OUTLINE
             #pragma multi_compile _ADDITIONAL_LIGHTS
             #pragma multi_compile _FORWARD_PLUS
             #pragma multi_compile_fragment _MATERIAL_TRANSFORM
