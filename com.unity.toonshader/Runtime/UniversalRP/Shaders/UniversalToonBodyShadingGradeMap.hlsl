@@ -183,7 +183,6 @@
 
                 float3 pointLightColor = 0;
                 half3 accLightColor = Set_LightColor;  // to use for high color & rim color & matcap
-                half3 pureAccLightColor = Set_LightColor;  // for final character compositing
   #ifdef _ADDITIONAL_LIGHTS
 
                 int pixelLightCount = GetAdditionalLightsCount();
@@ -198,7 +197,6 @@
                         additionalLight = GetAdditionalUtsLight(loopCounter, inputData.positionWS, i.positionCS);
                         
                         half3 attenLightColor;
-                        pureAccLightColor += GetLightColor(additionalLight);
                         half3 finalColor = AdditionalLightingShadingGradeMap(additionalLight, _MainTex_var, Set_UV0, i.normalDir, normalDirection, viewDirection, inputData.positionWS, opacity, attenLightColor, sdfAtten, sdfMask);
                         accLightColor += attenLightColor;
                         pointLightColor +=  finalColor;
@@ -224,7 +222,6 @@
                         }
                         
                         half3 attenLightColor;
-                        pureAccLightColor += GetLightColor(additionalLight);
                         half3 finalColor = AdditionalLightingShadingGradeMap(additionalLight, _MainTex_var, Set_UV0, i.normalDir, normalDirection, viewDirection, inputData.positionWS, opacity, attenLightColor, sdfAtten, sdfMask, iLight);
                         accLightColor += attenLightColor;
                         pointLightColor +=  finalColor;
@@ -448,11 +445,7 @@
 #endif
 
                 // Final Lighting Composition - to prevent being god
-                float maxLightStrength = max(pureAccLightColor.r, max(pureAccLightColor.g, pureAccLightColor.b));
-                if (maxLightStrength > 1.0)
-                {
-                    finalColor.rgb /= maxLightStrength;
-                }
+                finalColor = min(finalColor, _MainTex_var.rgb);
 
 //v.2.0.4
 #ifdef _IS_TRANSCLIPPING_OFF
