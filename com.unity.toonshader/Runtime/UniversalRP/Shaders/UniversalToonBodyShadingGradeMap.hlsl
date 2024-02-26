@@ -445,7 +445,7 @@
 #endif
 
                 // Final Lighting Composition - to prevent being god
-                finalColor = min(finalColor, _MainTex_var.rgb);
+                finalColor = min(finalColor, _MainTex_var.rgb + _RimLight_var);
 
 //v.2.0.4
 #ifdef _IS_TRANSCLIPPING_OFF
