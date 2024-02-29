@@ -1,4 +1,4 @@
-float3 AdditionalLighting(UtsLight additionalLight, float4 _MainTex_var, float2 Set_UV0, float3 normalDir, float3 normalDirection, float3 viewDirection, float3 worldPos, float opacity, out half3 attenuatedLightColor, half faceSDFAtten = 1, half faceSDFMask = 0, uint lightIndex = 0)
+float3 AdditionalLighting(UtsLight additionalLight, float4 _MainTex_var, float2 Set_UV0, float3 normalDir, float3 normalDirection, float3 viewDirection, float3 worldPos, float opacity, out half3 attenuatedLightColor, inout float3 glitterColor, half faceSDFAtten = 1, half faceSDFMask = 0, uint lightIndex = 0)
 {
     float notDirectional = 1.0f; //_WorldSpaceLightPos0.w of the legacy code.
     half3 additionalLightColor = GetLightColor(additionalLight);
@@ -62,7 +62,7 @@ float3 AdditionalLighting(UtsLight additionalLight, float4 _MainTex_var, float2 
     // finalColor = lerp(finalColor, 0, Set_FinalShadowMask);
 
     // Glitter
-    Glitter(finalColor, opacity, viewDirection, normalDir, normalDirection, Set_UV0, Set_FinalBaseColor, additionalLight.shadowAttenuation, lightDirection, lightColor);
+    glitterColor += Glitter(finalColor, opacity, viewDirection, normalDir, normalDirection, Set_UV0, Set_FinalBaseColor, additionalLight.shadowAttenuation, lightDirection, lightColor);
 
 #if _USE_CHAR_SHADOW    // CUSTOM (Character Shadow)
     half ssShadowAtten = GetCharAdditionalShadow(worldPos, opacity, lightIndex, faceSDFAtten, faceSDFMask);
@@ -79,7 +79,7 @@ float3 AdditionalLighting(UtsLight additionalLight, float4 _MainTex_var, float2 
     return finalColor;
 }
 
-float3 AdditionalLightingShadingGradeMap(UtsLight additionalLight, float4 _MainTex_var, float2 Set_UV0, float3 normalDir, float3 normalDirection, float3 viewDirection, float3 worldPos, float opacity, out half3 attenuatedLightColor, half faceSDFAtten = 1, half faceSDFMask = 0, uint lightIndex = 0)
+float3 AdditionalLightingShadingGradeMap(UtsLight additionalLight, float4 _MainTex_var, float2 Set_UV0, float3 normalDir, float3 normalDirection, float3 viewDirection, float3 worldPos, float opacity, out half3 attenuatedLightColor, inout float3 glitterColor, half faceSDFAtten = 1, half faceSDFMask = 0, uint lightIndex = 0)
 {
     float notDirectional = 1.0f; //_WorldSpaceLightPos0.w of the legacy code.
     half3 additionalLightColor = GetLightColor(additionalLight);
@@ -152,7 +152,7 @@ float3 AdditionalLightingShadingGradeMap(UtsLight additionalLight, float4 _MainT
     // finalColor = lerp(finalColor, 0, Set_FinalShadowMask);
 
     // Glitter
-    Glitter(finalColor, opacity, viewDirection, normalDir, normalDirection, Set_UV0, Set_FinalBaseColor, additionalLight.shadowAttenuation, lightDirection, lightColor);
+    glitterColor += Glitter(finalColor, opacity, viewDirection, normalDir, normalDirection, Set_UV0, Set_FinalBaseColor, additionalLight.shadowAttenuation, lightDirection, lightColor);
 
 #if _USE_CHAR_SHADOW    // CUSTOM (Character Shadow)
     half ssShadowAtten = GetCharAdditionalShadow(worldPos, opacity, lightIndex, faceSDFAtten, faceSDFMask);

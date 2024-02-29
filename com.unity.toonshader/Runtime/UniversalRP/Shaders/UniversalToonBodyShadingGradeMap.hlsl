@@ -183,6 +183,7 @@
 
                 float3 pointLightColor = 0;
                 half3 accLightColor = Set_LightColor;  // to use for high color & rim color & matcap
+                float3 glitterColor = 0;
   #ifdef _ADDITIONAL_LIGHTS
 
                 int pixelLightCount = GetAdditionalLightsCount();
@@ -197,7 +198,7 @@
                         additionalLight = GetAdditionalUtsLight(loopCounter, inputData.positionWS, i.positionCS);
                         
                         half3 attenLightColor;
-                        half3 finalColor = AdditionalLightingShadingGradeMap(additionalLight, _MainTex_var, Set_UV0, i.normalDir, normalDirection, viewDirection, inputData.positionWS, opacity, attenLightColor, sdfAtten, sdfMask);
+                        half3 finalColor = AdditionalLightingShadingGradeMap(additionalLight, _MainTex_var, Set_UV0, i.normalDir, normalDirection, viewDirection, inputData.positionWS, opacity, attenLightColor, glitterColor, sdfAtten, sdfMask);
                         accLightColor += attenLightColor;
                         pointLightColor +=  finalColor;
                     }
@@ -222,7 +223,7 @@
                         }
                         
                         half3 attenLightColor;
-                        half3 finalColor = AdditionalLightingShadingGradeMap(additionalLight, _MainTex_var, Set_UV0, i.normalDir, normalDirection, viewDirection, inputData.positionWS, opacity, attenLightColor, sdfAtten, sdfMask, iLight);
+                        half3 finalColor = AdditionalLightingShadingGradeMap(additionalLight, _MainTex_var, Set_UV0, i.normalDir, normalDirection, viewDirection, inputData.positionWS, opacity, attenLightColor, glitterColor, sdfAtten, sdfMask, iLight);
                         accLightColor += attenLightColor;
                         pointLightColor +=  finalColor;
                         //	pointLightColor += lightColor;
@@ -376,6 +377,25 @@
                 //Composition: MatCap and AngelRing as finalColor
                 finalColor = lerp(finalColor, lerp((finalColor + Set_AngelRing), ((finalColor*(1.0 - Set_ARtexAlpha))+Set_AngelRingWithAlpha), _ARSampler_AlphaOn ), _AngelRing );// Final Composition before Emissive
 #endif
+
+                // Glitter
+                glitterColor += Glitter(finalColor, opacity, viewDirection, i.normalDir, normalDirection, Set_UV0, Set_FinalBaseColor, shadowAttenuation, lightDirection, lightColor);
+
+                // CUSTOM (Anisotropic Hair)
+#if _USE_ANISOTROPIC_HAIR
+                finalColor += AnisotropicHairHighlight(viewDirection, Set_UV0, inputData.positionWS);
+#endif
+                // CUSTOM (Character Shadowmap)
+#if _USE_CHAR_SHADOW
+                half ssShadowAtten = GetCharMainShadow(inputData.positionWS, Set_UV0, opacity, sdfAtten, sdfMask);
+                finalColor = lerp(finalColor, finalShadeColor, ssShadowAtten);
+#endif
+
+                // CUSTOM (SSS)
+#if _USE_SSS
+                finalColor += SubsurfaceScattering(lightDirection, viewDirection, lerp(i.normalDir, normalDirection, _Is_NormalMapToBase), Set_BaseColor, lightColor);
+#endif
+
 //v.2.0.7
 #ifdef _EMISSIVE_SIMPLE
                 float4 _Emissive_Tex_var = tex2D(_Emissive_Tex,TRANSFORM_TEX(Set_UV0, _Emissive_Tex));
@@ -414,21 +434,6 @@
                 emissive = emissive_Color.rgb * _Emissive_Tex_var.rgb * emissiveMask;
 #endif
 
-                // CUSTOM (Anisotropic Hair)
-#if _USE_ANISOTROPIC_HAIR
-                finalColor += AnisotropicHairHighlight(viewDirection, Set_UV0, inputData.positionWS);
-#endif
-                // CUSTOM (Character Shadowmap)
-#if _USE_CHAR_SHADOW
-                half ssShadowAtten = GetCharMainShadow(inputData.positionWS, Set_UV0, opacity, sdfAtten, sdfMask);
-                finalColor = lerp(finalColor, finalShadeColor, ssShadowAtten);
-#endif
-
-                // CUSTOM (SSS)
-#if _USE_SSS
-                finalColor += SubsurfaceScattering(lightDirection, viewDirection, lerp(i.normalDir, normalDirection, _Is_NormalMapToBase), Set_BaseColor, lightColor);
-#endif
-
 //
                 //v.2.0.6: GI_Intensity with Intensity Multiplier Filter
 
@@ -445,7 +450,7 @@
 #endif
 
                 // Final Lighting Composition - to prevent being god
-                finalColor = min(finalColor, _MainTex_var.rgb + _RimLight_var);
+                finalColor = min(finalColor, _MainTex_var.rgb + _RimLight_var + saturate(glitterColor));
 
 //v.2.0.4
 #ifdef _IS_TRANSCLIPPING_OFF

@@ -180,6 +180,7 @@
 
                 float3 pointLightColor = 0;
                 half3 accLightColor = Set_LightColor;  // to use for high color & rim color & matcap
+                float3 glitterColor = 0;
   #ifdef _ADDITIONAL_LIGHTS
 
                 int pixelLightCount = GetAdditionalLightsCount();
@@ -195,7 +196,7 @@
                         additionalLight = GetAdditionalUtsLight(iLight, inputData.positionWS,i.positionCS);
 
                         half3 attenLightColor;
-                        half3 finalColor = AdditionalLighting(additionalLight, _MainTex_var, Set_UV0, i.normalDir, normalDirection, viewDirection, inputData.positionWS, opacity, attenLightColor, sdfAtten, sdfMask);
+                        half3 finalColor = AdditionalLighting(additionalLight, _MainTex_var, Set_UV0, i.normalDir, normalDirection, viewDirection, inputData.positionWS, opacity, attenLightColor, glitterColor, sdfAtten, sdfMask);
                         accLightColor += attenLightColor;
                         pointLightColor += finalColor;
                     }
@@ -220,7 +221,7 @@
                         }
 
                         half3 attenLightColor;
-                        half3 finalColor = AdditionalLighting(additionalLight, _MainTex_var, Set_UV0, i.normalDir, normalDirection, viewDirection, inputData.positionWS, opacity, attenLightColor, sdfAtten, sdfMask, iLight);
+                        half3 finalColor = AdditionalLighting(additionalLight, _MainTex_var, Set_UV0, i.normalDir, normalDirection, viewDirection, inputData.positionWS, opacity, attenLightColor, glitterColor, sdfAtten, sdfMask, iLight);
                         accLightColor += attenLightColor;
                         pointLightColor += finalColor;
                     }
@@ -351,7 +352,7 @@
                 finalColor += lerp(0, matCap2ColorFinal, _MatCap2);
 
                 // Glitter
-                Glitter(finalColor, opacity, viewDirection, i.normalDir, normalDirection, Set_UV0, Set_FinalBaseColor, shadowAttenuation, lightDirection, lightColor);
+                glitterColor += Glitter(finalColor, opacity, viewDirection, i.normalDir, normalDirection, Set_UV0, Set_FinalBaseColor, shadowAttenuation, lightDirection, lightColor);
 
                 // CUSTOM (Anisotropic Hair)
 #if _USE_ANISOTROPIC_HAIR
@@ -422,7 +423,7 @@
 #endif
 
                 // Final Lighting Composition - to prevent being god
-                finalColor = min(finalColor, _MainTex_var.rgb + _RimLight_var);
+                finalColor = min(finalColor, _MainTex_var.rgb + _RimLight_var + saturate(glitterColor));
 
 //v.2.0.4
 #ifdef _IS_CLIPPING_OFF

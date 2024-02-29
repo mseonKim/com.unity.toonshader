@@ -108,8 +108,9 @@ float3 CalcGlitter(float2 uv, float3 normalDirection, float3 viewDirection, floa
     return glitterColor;
 }
 
-void Glitter(inout float3 color, float alpha, float3 viewDirection, float3 normalWS, float3 normalDirection, float2 uv, float3 albedo, half shadowAtten, float3 lightDirection, float3 lightColor)
+float3 Glitter(inout float3 color, float alpha, float3 viewDirection, float3 normalWS, float3 normalDirection, float2 uv, float3 albedo, half shadowAtten, float3 lightDirection, float3 lightColor)
 {
+    float3 glitter = 0;
     if(_Glitter)
     {
         float4 glitterParams1 = float4(256, 256, _GlitterParticleSize, _GlitterContrast);
@@ -138,8 +139,10 @@ void Glitter(inout float3 color, float alpha, float3 viewDirection, float3 norma
         // Blend
         glitterColor.a = lerp(glitterColor.a, glitterColor.a * shadowAtten, _GlitterShadowMask);
         glitterColor.rgb = lerp(glitterColor.rgb, glitterColor.rgb * lightColor, _GlitterEnableLighting);
-        color.rgb += glitterColor.rgb * glitterColor.a;
+        glitter = glitterColor.rgb * glitterColor.a;
+        color.rgb += glitter;
     }
+    return glitter;
 }
 
 #endif // UNIVERSAL_TOON_GLITTER_INCLUDED
