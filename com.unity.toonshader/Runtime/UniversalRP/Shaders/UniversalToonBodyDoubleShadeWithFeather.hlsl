@@ -239,10 +239,30 @@
 
                 float4 _HighColor_Tex_var = tex2D(_HighColor_Tex, TRANSFORM_TEX(Set_UV0, _HighColor_Tex));
 
-                float3 _HighColor_var = (lerp( (_HighColor_Tex_var.rgb*_HighColor.rgb), ((_HighColor_Tex_var.rgb*_HighColor.rgb)*accLightColor), _Is_LightColor_HighColor )*_TweakHighColorMask_var);
+                float3 _HighColor_var = (lerp( (_HighColor_Tex_var.rgb*_HighColor.rgb), ((_HighColor_Tex_var.rgb*_HighColor.rgb)*lightColor), _Is_LightColor_HighColor )*_TweakHighColorMask_var);
                 //Composition: 3 Basic Colors and HighColor as Set_HighColor
                 float3 Set_HighColor = (lerp(SATURATE_IF_SDR((Set_FinalBaseColor-_TweakHighColorMask_var)), Set_FinalBaseColor, lerp(_Is_BlendAddToHiColor,1.0,_Is_SpecularToHighColor) )+lerp( _HighColor_var, (_HighColor_var*((1.0 - Set_FinalShadowMask)+(Set_FinalShadowMask*_TweakHighColorOnShadow))), _Is_UseTweakHighColorOnShadow ));
+                
+                float3 finalColor = Set_HighColor;
+                // Glitter
+                glitterColor += Glitter(finalColor, opacity, viewDirection, i.normalDir, normalDirection, Set_UV0, Set_FinalBaseColor, shadowAttenuation, lightDirection, lightColor);
 
+                // CUSTOM (Anisotropic Hair)
+#if _USE_ANISOTROPIC_HAIR
+                finalColor += AnisotropicHairHighlight(viewDirection, Set_UV0, inputData.positionWS);
+#endif
+                // CUSTOM (Character Shadowmap)
+                half ssShadowAtten = 0;
+#if _USE_CHAR_SHADOW
+                ssShadowAtten = GetCharMainShadow(inputData.positionWS, Set_UV0, opacity, sdfAtten, sdfMask);
+                finalColor = lerp(finalColor, finalShadeColor, ssShadowAtten);
+#endif
+
+                finalColor += pointLightColor;
+                finalColor = min(finalColor, saturate(_MainTex_var.rgb + glitterColor)); // To prevent being a god
+                
+                // Apply global lights (Rim, Matcap, GI, Emissive)
+                
                 float4 _Set_RimLightMask_var = tex2D(_Set_RimLightMask, TRANSFORM_TEX(Set_UV0, _Set_RimLightMask));
 
                 float3 _Is_LightColor_RimLight_var = lerp( _RimLightColor.rgb, (_RimLightColor.rgb*accLightColor), _Is_LightColor_RimLight );
@@ -252,13 +272,14 @@
                 float _VertHalfLambert_var = 0.5*dot(i.normalDir,lightDirection)+0.5;
                 float3 _LightDirection_MaskOn_var = lerp( (_Is_LightColor_RimLight_var*_Rimlight_InsideMask_var), (_Is_LightColor_RimLight_var*saturate((_Rimlight_InsideMask_var-((1.0 - _VertHalfLambert_var)+_Tweak_LightDirection_MaskLevel)))), _LightDirection_MaskOn );
                 float _ApRimLightPower_var = pow(_RimArea_var,exp2(lerp(3,0,_Ap_RimLight_Power)));
-                float3 Set_RimLight = (saturate((_Set_RimLightMask_var.g+_Tweak_RimLightMaskLevel))*lerp( _LightDirection_MaskOn_var, (_LightDirection_MaskOn_var+(lerp( _Ap_RimLightColor.rgb, (_Ap_RimLightColor.rgb*Set_LightColor), _Is_LightColor_Ap_RimLight )*saturate((lerp( (0.0 + ( (_ApRimLightPower_var - _RimLight_InsideMask) * (1.0 - 0.0) ) / (1.0 - _RimLight_InsideMask)), step(_RimLight_InsideMask,_ApRimLightPower_var), _Ap_RimLight_FeatherOff )-(saturate(_VertHalfLambert_var)+_Tweak_LightDirection_MaskLevel))))), _Add_Antipodean_RimLight ));
+                float3 Set_RimLight = (saturate((_Set_RimLightMask_var.g+_Tweak_RimLightMaskLevel))*lerp( _LightDirection_MaskOn_var, (_LightDirection_MaskOn_var+(lerp( _Ap_RimLightColor.rgb, (_Ap_RimLightColor.rgb*accLightColor), _Is_LightColor_Ap_RimLight )*saturate((lerp( (0.0 + ( (_ApRimLightPower_var - _RimLight_InsideMask) * (1.0 - 0.0) ) / (1.0 - _RimLight_InsideMask)), step(_RimLight_InsideMask,_ApRimLightPower_var), _Ap_RimLight_FeatherOff )-(saturate(_VertHalfLambert_var)+_Tweak_LightDirection_MaskLevel))))), _Add_Antipodean_RimLight ));
                 //Composition: HighColor and RimLight as _RimLight_var
                 if (facing < 0.1)
                 {
                     Set_RimLight = 0;
                 }
-                float3 _RimLight_var = lerp( Set_HighColor, (Set_HighColor+Set_RimLight), _RimLight );
+                float3 _RimLight_var = lerp( finalColor, (finalColor+Set_RimLight), _RimLight );
+
                 //Matcap
                 //v.2.0.6 : CameraRolling Stabilizer
                 //Mirror Script Determination: if sign_Mirror = -1, determine "Inside the mirror".
@@ -308,17 +329,21 @@
               //
                 //MatcapMask
                 float _Tweak_MatcapMaskLevel_var = saturate(lerp(_Set_MatcapMask_var.g, (1.0 - _Set_MatcapMask_var.g), _Inverse_MatcapMask) + _Tweak_MatcapMaskLevel);
-                //
+                // LightColor - apply lightcolor or not depending on the toggle value in editor.
+                // Set 2 matcap varialbes (Set_MatCap, Set_LightColor_MatCap) seperately because 'MultiplyMode' makes darker when the light color is less than 1.
+                // So we don't use lightcolor for 'MultiplyMode'.
+                float3 MatCap_var = _MatCapColor.a * (_MatCap_Sampler_var.rgb*_MatCapColor.rgb);
                 float3 _Is_LightColor_MatCap_var = _MatCapColor.a * lerp( (_MatCap_Sampler_var.rgb*_MatCapColor.rgb), ((_MatCap_Sampler_var.rgb*_MatCapColor.rgb)*accLightColor), _Is_LightColor_MatCap );
                 //v.2.0.6 : ShadowMask on Matcap in Blend mode : multiply
-                float3 Set_MatCap = lerp( _Is_LightColor_MatCap_var, (_Is_LightColor_MatCap_var*((1.0 - Set_FinalShadowMask)+(Set_FinalShadowMask*_TweakMatCapOnShadow)) + lerp(Set_HighColor*Set_FinalShadowMask*(1.0-_TweakMatCapOnShadow), float3(0.0, 0.0, 0.0), _Is_BlendAddToMatCap)), _Is_UseTweakMatCapOnShadow );
+                float3 Set_MatCap = lerp( MatCap_var, (MatCap_var*((1.0 - Set_FinalShadowMask)+(Set_FinalShadowMask*_TweakMatCapOnShadow)) + lerp(finalColor*Set_FinalShadowMask*(1.0-_TweakMatCapOnShadow), float3(0.0, 0.0, 0.0), _Is_BlendAddToMatCap)), _Is_UseTweakMatCapOnShadow );
+                float3 Set_LightColor_MatCap = lerp( _Is_LightColor_MatCap_var, (_Is_LightColor_MatCap_var*((1.0 - Set_FinalShadowMask)+(Set_FinalShadowMask*_TweakMatCapOnShadow)) + lerp(finalColor*Set_FinalShadowMask*(1.0-_TweakMatCapOnShadow), float3(0.0, 0.0, 0.0), _Is_BlendAddToMatCap)), _Is_UseTweakMatCapOnShadow );
 
                 //
                 //Composition: RimLight and MatCap as finalColor
                 //Broke down finalColor composition
-                float3 matCapColorOnAddMode = _RimLight_var+Set_MatCap*_Tweak_MatcapMaskLevel_var;
+                float3 matCapColorOnAddMode = _RimLight_var+Set_LightColor_MatCap*_Tweak_MatcapMaskLevel_var;
                 float _Tweak_MatcapMaskLevel_var_MultiplyMode = _Tweak_MatcapMaskLevel_var * lerp (1.0, (1.0 - (Set_FinalShadowMask)*(1.0 - _TweakMatCapOnShadow)), _Is_UseTweakMatCapOnShadow);
-                float3 matCapColorOnMultiplyMode = Set_HighColor*(1-_Tweak_MatcapMaskLevel_var_MultiplyMode) + Set_HighColor*Set_MatCap*_Tweak_MatcapMaskLevel_var_MultiplyMode + lerp(float3(0,0,0),Set_RimLight,_RimLight);
+                float3 matCapColorOnMultiplyMode = finalColor*(1-_Tweak_MatcapMaskLevel_var_MultiplyMode) + finalColor*Set_MatCap*_Tweak_MatcapMaskLevel_var_MultiplyMode + lerp(float3(0,0,0),Set_RimLight,_RimLight);
                 float3 matCapColorFinal = lerp(matCapColorOnMultiplyMode, matCapColorOnAddMode, _Is_BlendAddToMatCap);
 
                 // CUSTOM - Matcap2
@@ -338,36 +363,25 @@
                 }else{
                     _Rot_MatCap2UV_var = _Rot_MatCap2UV_var;
                 }
-
+                
                 float4 _MatCap_Sampler2_var = SAMPLE_TEXTURE2D(_MatCap_Sampler2, sampler_MainTex, TRANSFORM_TEX(_Rot_MatCap2UV_var, _MatCap_Sampler2));
                 float4 _Set_MatcapMask2_var = SAMPLE_TEXTURE2D(_Set_MatcapMask2, sampler_MainTex, TRANSFORM_TEX(Set_UV0, _Set_MatcapMask2));
-
+                
                 float _Tweak_Matcap2MaskLevel_var = saturate(lerp(_Set_MatcapMask2_var.g, (1.0 - _Set_MatcapMask2_var.g), _Inverse_Matcap2Mask) + _Tweak_Matcap2MaskLevel);
                 if (_Tweak_Matcap2MaskLevel_var > 0)
                 {
+                    MatCap_var = _MatCapColor2.a * _MatCap_Sampler2_var.rgb * _MatCapColor2.rgb;
                     _Is_LightColor_MatCap_var = _MatCapColor2.a * lerp( (_MatCap_Sampler2_var.rgb*_MatCapColor2.rgb), ((_MatCap_Sampler2_var.rgb*_MatCapColor2.rgb)*accLightColor), _Is_LightColor_MatCap );
-                    Set_MatCap = lerp( _Is_LightColor_MatCap_var, (_Is_LightColor_MatCap_var*((1.0 - Set_FinalShadowMask)+(Set_FinalShadowMask*_TweakMatCap2OnShadow)) + lerp(Set_HighColor*Set_FinalShadowMask*(1.0-_TweakMatCap2OnShadow), float3(0.0, 0.0, 0.0), _Is_BlendAddToMatCap2)), _Is_UseTweakMatCap2OnShadow );
-                    matCapColorOnAddMode = _RimLight_var+Set_MatCap*_Tweak_Matcap2MaskLevel_var;
+                    Set_MatCap = lerp( MatCap_var, (MatCap_var*((1.0 - Set_FinalShadowMask)+(Set_FinalShadowMask*_TweakMatCap2OnShadow)) + lerp(finalColor*Set_FinalShadowMask*(1.0-_TweakMatCap2OnShadow), float3(0.0, 0.0, 0.0), _Is_BlendAddToMatCap2)), _Is_UseTweakMatCap2OnShadow );
+                    Set_LightColor_MatCap = lerp( _Is_LightColor_MatCap_var, (_Is_LightColor_MatCap_var*((1.0 - Set_FinalShadowMask)+(Set_FinalShadowMask*_TweakMatCap2OnShadow)) + lerp(finalColor*Set_FinalShadowMask*(1.0-_TweakMatCap2OnShadow), float3(0.0, 0.0, 0.0), _Is_BlendAddToMatCap2)), _Is_UseTweakMatCap2OnShadow );
+                    matCapColorOnAddMode = _RimLight_var+Set_LightColor_MatCap*_Tweak_Matcap2MaskLevel_var;
                     _Tweak_MatcapMaskLevel_var_MultiplyMode = _Tweak_Matcap2MaskLevel_var * lerp (1.0, (1.0 - (Set_FinalShadowMask)*(1.0 - _TweakMatCap2OnShadow)), _Is_UseTweakMatCap2OnShadow);
-                    matCapColorOnMultiplyMode = Set_HighColor*(1-_Tweak_MatcapMaskLevel_var_MultiplyMode) + Set_HighColor*Set_MatCap*_Tweak_MatcapMaskLevel_var_MultiplyMode + lerp(float3(0,0,0),Set_RimLight,_RimLight);
+                    matCapColorOnMultiplyMode = finalColor*(1-_Tweak_MatcapMaskLevel_var_MultiplyMode) + finalColor*Set_MatCap*_Tweak_MatcapMaskLevel_var_MultiplyMode + lerp(float3(0,0,0),Set_RimLight,_RimLight);
                     matCap2ColorFinal = lerp(matCapColorOnMultiplyMode, matCapColorOnAddMode, _Is_BlendAddToMatCap2);
                 }
-                float3 finalColor = lerp(_RimLight_var, matCapColorFinal, _MatCap);// Final Composition before Emissive
+                finalColor = lerp(_RimLight_var, matCapColorFinal, _MatCap);// Final Composition before Emissive
                 finalColor += lerp(0, matCap2ColorFinal, _MatCap2);
 
-                // Glitter
-                glitterColor += Glitter(finalColor, opacity, viewDirection, i.normalDir, normalDirection, Set_UV0, Set_FinalBaseColor, shadowAttenuation, lightDirection, lightColor);
-
-                // CUSTOM (Anisotropic Hair)
-#if _USE_ANISOTROPIC_HAIR
-                finalColor += AnisotropicHairHighlight(viewDirection, Set_UV0, inputData.positionWS);
-#endif
-                // CUSTOM (Character Shadowmap)
-                half ssShadowAtten = 0;
-#if _USE_CHAR_SHADOW
-                ssShadowAtten = GetCharMainShadow(inputData.positionWS, Set_UV0, opacity, sdfAtten, sdfMask);
-                finalColor = lerp(finalColor, finalShadeColor, ssShadowAtten);
-#endif
 
                 // CUSTOM (SSS)
 #if _USE_SSS
@@ -421,13 +435,12 @@
 #endif
 
                 //Final Composition#if 
-                finalColor += pointLightColor;
                 finalColor = SATURATE_IF_SDR(finalColor) + (envLightColor*envLightIntensity*_GI_Intensity*smoothstep(1,0,envLightIntensity/2)) + emissive;
 
 #endif
 
                 // Final Lighting Composition - to prevent being god
-                finalColor = min(finalColor, _MainTex_var.rgb + _RimLight_var + saturate(glitterColor));
+                finalColor = saturate(finalColor);
 
 //v.2.0.4
 #ifdef _IS_CLIPPING_OFF
