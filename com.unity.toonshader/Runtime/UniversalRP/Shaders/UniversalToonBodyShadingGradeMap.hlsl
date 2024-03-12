@@ -83,7 +83,7 @@
 //v.2.0.4
 #ifdef _IS_TRANSCLIPPING_OFF
 //
-#elif _IS_TRANSCLIPPING_ON
+#elif defined(_IS_TRANSCLIPPING_ON) || defined(_IS_CLIPPING_TRANSMODE)
 
                 float4 _ClippingMask_var = SAMPLE_TEXTURE2D(_ClippingMask, sampler_MainTex, TRANSFORM_TEX(Set_UV0, _ClippingMask));
                 float Set_MainTexAlpha = _MainTex_var.a;
