@@ -353,27 +353,6 @@
                 _LightColor0.rgb = lerp(_LightColor0.rgb, 0, ssShadowAtten);
 #endif
 
-                /// CUSTOM - Outline brightness
-// #ifdef _ADDITIONAL_LIGHTS
-//     #if USE_FORWARD_PLUS
-//                 UTS_LIGHT_LOOP_BEGIN(0)
-//                     int iLight = lightIndex;
-//                     {
-//                         UtsLight additionalLight = GetUrpMainUtsLight(0,0);
-//                         if (iLight != -1)
-//                         {
-//                             additionalLight = GetAdditionalUtsLight(iLight, i.worldPos, i.pos);
-//                         }
-//                         half3 additionalLightColor = GetLightColor(additionalLight);
-//         #if _USE_CHAR_SHADOW  // CUSTOM (Character Shadowmap)
-//                         ssShadowAtten = GetCharAdditionalShadow(i.worldPos, opacity, lightIndex);
-//                         additionalLightColor = lerp(additionalLightColor, 0, ssShadowAtten);
-//         #endif
-//                         _LightColor0.rgb += additionalLightColor;
-//                     }
-//                 UTS_LIGHT_LOOP_END
-//     #endif
-// #endif
                 _LightColor0.rgb = saturate(_LightColor0.rgb);
                 ///
                 float3 lightColor = _LightColor0.rgb >0.05 ? _LightColor0.rgb : ambientSkyColor.rgb;

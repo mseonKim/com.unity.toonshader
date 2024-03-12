@@ -1228,8 +1228,6 @@ Shader "Toon" {
             #pragma multi_compile _IS_OUTLINE_CLIPPING_NO _IS_OUTLINE_CLIPPING_YES
             #pragma multi_compile _OUTLINE_NML _OUTLINE_POS
             // CUSTOM
-            #pragma multi_compile _ADDITIONAL_LIGHTS
-            #pragma multi_compile _FORWARD_PLUS
             #pragma shader_feature_local _USE_CHAR_SHADOW
             #pragma multi_compile_fragment _MATERIAL_TRANSFORM
             // Outline is implemented in UniversalToonOutline.hlsl.
