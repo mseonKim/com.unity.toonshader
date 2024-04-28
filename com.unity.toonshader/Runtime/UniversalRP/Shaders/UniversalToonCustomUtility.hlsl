@@ -73,18 +73,20 @@ half SpiralBlur(TEXTURE2D_PARAM(tex, samplerTex), float2 UV, float Distance, flo
 #define COS_66 0.406
 #define COS_50 0.64278
 #define COS_70 0.34202
+#define COS_45 0.7071
+
 half GetFaceSDFAtten(half3 lightDir, float2 uv)
 {
-#if _USE_CHAR_SHADOW
+// #if _USE_CHAR_SHADOW // FIXME: I assumed charshadow feature is active. Will create brightestlightdirection provider to support both SDF and CharShadow? 
     lightDir = _BrightestLightDirection.xyz;
-#endif
+// #endif
     // Construct TBN based on face forward & up
     // Transform lightDir to TBN space
-    half3 N = _FaceUp.xyz;
-    half3 T = _FaceForward.xyz;
-    half3 B = cross(T, N);
-    half3x3 TBN = half3x3(T, B, N);
-    half3 lightT = mul(TBN, lightDir);
+    const half3 N = _FaceUp.xyz;
+    const half3 T = _FaceForward.xyz;
+    const half3 B = cross(T, N);
+    const half3x3 TBN = half3x3(T, B, N);
+    const half3 lightT = mul(TBN, lightDir);
 
     half3 forwardT = mul(TBN, _FaceForward.xyz);
     half2 l = normalize(lightT.xy);
@@ -95,6 +97,11 @@ half GetFaceSDFAtten(half3 lightDir, float2 uv)
     {
         return 0;
     }
+
+    bool flipped = 1.0 - l.y < COS_45;
+    uv.x = lerp(uv.x, 1 - uv.x, flipped);   // Assume the sdf texture is symmetry.
+    // l.y = lerp(l.y, 1 - l.y, flipped);
+    // NoL = dot(l, n);
 
     // To skip ugly facemask shadow
     if (NoL > COS_70 && NoL < COS_50)
@@ -109,19 +116,16 @@ half GetFaceSDFAtten(half3 lightDir, float2 uv)
             NoL = smoothstep(COS_70, 0.5, NoL);
         }
     }
-
-    bool flipped = saturate(sign(lightT.y));
-
+    
     // Sample
     half faceSdfAtten = SpiralBlur(TEXTURE2D_ARGS(_SDF_Tex, sampler_SDF_Tex), uv, _RcpSDFSize, 16, 8, 0.62, 1) + _SDF_Offset;
-
-    // Apply Flip
-    faceSdfAtten = lerp(1.0 - faceSdfAtten, faceSdfAtten, flipped);
     
     // Reverse if need
     faceSdfAtten = lerp(faceSdfAtten, 1.0 - faceSdfAtten, _SDF_Reverse);
 
-    faceSdfAtten = LinearStep(-_SDF_Feather, _SDF_Feather, NoL - faceSdfAtten);
+    NoL = 1.0 - NoL;
+    faceSdfAtten = LinearStep(-_SDF_Feather, _SDF_Feather, faceSdfAtten - NoL);
+
     return faceSdfAtten;
 }
 
