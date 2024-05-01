@@ -134,6 +134,10 @@
                 //v.2.0.5
                 _Color = _BaseColor;
 
+#if _USE_SDF
+                i.normalDir = _FaceForward.xyz; 
+#endif
+
 #ifdef _IS_PASS_FWDBASE
                 float3 Set_LightColor = lightColor.rgb;
                 float3 Set_BaseColor = lerp( (_BaseColor.rgb*_MainTex_var.rgb), ((_BaseColor.rgb*_MainTex_var.rgb)*Set_LightColor), _Is_LightColor_Base );

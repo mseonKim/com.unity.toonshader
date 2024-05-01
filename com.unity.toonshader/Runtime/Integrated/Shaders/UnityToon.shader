@@ -1458,6 +1458,7 @@ Shader "Toon" {
 
             #pragma vertex CharShadowVertex
             #pragma fragment CharShadowFragment
+            #pragma shader_feature_local _USE_SDF
             #pragma multi_compile_fragment _MATERIAL_TRANSFORM
 
             #include "../../UniversalRP/Shaders/UniversalToonInput.hlsl"

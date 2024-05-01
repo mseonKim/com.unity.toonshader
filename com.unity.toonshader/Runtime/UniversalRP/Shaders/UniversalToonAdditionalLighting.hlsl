@@ -71,6 +71,11 @@ float3 AdditionalLighting(UtsLight additionalLight, float4 _MainTex_var, float2 
     attenuatedLightColor = lerp(attenuatedLightColor, 0, ssShadowAtten);
     // finalColor = lerp(finalColor, dotNL > 0 ? finalShadeColor * 0.1 : 0, ssShadowAtten);
     // finalColor = lerp(finalColor, lerp(finalShadeColor, 0, Set_FinalShadowMask), ssShadowAtten);
+#else
+    #if _USE_SDF // e.g. eyeball
+    finalColor = lerp(finalShadeColor, finalColor, faceSDFAtten);
+    attenuatedLightColor = lerp(0, attenuatedLightColor, faceSDFAtten);
+    #endif
 #endif
 
 #if _USE_SSS    // CUSTOM (SSS)
@@ -158,6 +163,11 @@ float3 AdditionalLightingShadingGradeMap(UtsLight additionalLight, float4 _MainT
     half ssShadowAtten = GetCharAdditionalShadow(worldPos, opacity, lightIndex, faceSDFAtten, faceSDFMask);
     finalColor = lerp(finalColor, finalShadeColor, ssShadowAtten);
     attenuatedLightColor = lerp(attenuatedLightColor, 0, ssShadowAtten);
+#else
+    #if _USE_SDF // e.g. eyeball
+    finalColor = lerp(finalShadeColor, finalColor, faceSDFAtten);
+    attenuatedLightColor = lerp(0, attenuatedLightColor, faceSDFAtten);
+    #endif
 #endif
 
 #if _USE_SSS    // CUSTOM (SSS)
