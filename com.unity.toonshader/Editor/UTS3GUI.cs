@@ -932,6 +932,10 @@ namespace UnityEditor.Rendering.Toon
                 label: "Adjust Rim Light Area", "Increasing this value narrows the area of influence of Rim Light.",
                 propName: "_RimLight_InsideMask", defaultValue: 0.0001f, min: 0.0001f, max: 1);
 
+            public static readonly RangeProperty rimLight_HardSmoothnessText = new RangeProperty(
+                label: "Hard Rim Smoothness", "Adjusts the smoothness of RimLight when RimLightFeather is disabled.",
+                propName: "_RimLight_HardSmoothness", defaultValue: 0, min: 0, max: 1);
+
             public static readonly RangeProperty glitterMainStrengthText = new RangeProperty(
                 label: "Main Color Power", tooltip: "Controls the strength of the main glitter color.",
                 propName: "_GlitterMainStrength", defaultValue: 0, min: 0, max: 1);
@@ -1854,6 +1858,7 @@ namespace UnityEditor.Rendering.Toon
             if (!_SimpleUI)
             {
                 GUI_RangeProperty(material, Styles.rimLight_InsideMaskText);
+                GUI_RangeProperty(material, Styles.rimLight_HardSmoothnessText);
 
                 EditorGUILayout.BeginHorizontal();
                 GUI_Toggle(material, Styles.rimlightFeatherText, ShaderPropRimLight_FeatherOff, MaterialGetInt(material, ShaderPropRimLight_FeatherOff) != 0);

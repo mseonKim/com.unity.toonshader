@@ -69,6 +69,7 @@ fixed _Is_NormalMapToRimLight;
 float _RimLight_Power;
 float _RimLight_InsideMask;
 fixed _RimLight_FeatherOff;
+fixed _RimLight_HardSmoothness;
 fixed _LightDirection_MaskOn;
 float _Tweak_LightDirection_MaskLevel;
 fixed _Add_Antipodean_RimLight;
@@ -224,8 +225,8 @@ half4 _GlitterColor;
 
 // CUSTOM
 float4 _SDF_Tex_ST;
-half4 _FaceForward;
-half4 _FaceUp;
+float4 _FaceForward;
+float4 _FaceUp;
 float _MinLightIntensity;
 float _AdditionalShadowDimmer;
 float _RcpSDFSize;

@@ -114,6 +114,7 @@ Shader "Toon" {
         [Toggle(_)] _Is_NormalMapToRimLight ("Is_NormalMapToRimLight", Float ) = 0
         _RimLight_Power ("RimLight_Power", Range(0, 1)) = 0.1
         _RimLight_InsideMask ("RimLight_InsideMask", Range(0.0001, 1)) = 0.0001
+        _RimLight_HardSmoothness ("RimLight_HardSmoothness", Range(0, 1)) = 0
         [Toggle(_)] _RimLight_FeatherOff ("RimLight_FeatherOff", Float ) = 0
 //RimLight
         [Toggle(_)] _LightDirection_MaskOn ("LightDirection_MaskOn", Float ) = 0
@@ -1223,7 +1224,6 @@ Shader "Toon" {
             #pragma vertex vert
             #pragma fragment frag
 
-
             //V.2.0.4
             #pragma multi_compile _IS_OUTLINE_CLIPPING_NO _IS_OUTLINE_CLIPPING_YES
             #pragma multi_compile _OUTLINE_NML _OUTLINE_POS
@@ -1603,8 +1603,8 @@ Shader "Toon" {
             #pragma multi_compile _IS_OUTLINE_CLIPPING_NO _IS_OUTLINE_CLIPPING_YES
             #pragma multi_compile _OUTLINE_NML _OUTLINE_POS
             // CUSTOM
-            #pragma shader_feature_local _USE_OIT
-            #pragma shader_feature_local _USE_OIT_OUTLINE
+            #pragma shader_feature _USE_OIT
+            #pragma shader_feature _USE_OIT_OUTLINE
             #pragma multi_compile _ADDITIONAL_LIGHTS
             #pragma multi_compile _FORWARD_PLUS
             #pragma multi_compile_fragment _MATERIAL_TRANSFORM
