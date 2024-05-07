@@ -62,7 +62,7 @@ float3 AdditionalLighting(UtsLight additionalLight, float4 _MainTex_var, float2 
     // finalColor = lerp(finalColor, 0, Set_FinalShadowMask);
 
     // Glitter
-    glitterColor += Glitter(finalColor, opacity, viewDirection, normalDir, normalDirection, Set_UV0, Set_FinalBaseColor, additionalLight.shadowAttenuation, lightDirection, lightColor);
+    glitterColor += Glitter(finalColor, opacity, viewDirection, normalDir, normalDirection, Set_UV0, Set_FinalBaseColor, saturate(additionalLight.shadowAttenuation), lightDirection, lightColor);
 
 #if _USE_CHAR_SHADOW    // CUSTOM (Character Shadow)
     half ssShadowAtten = GetCharAdditionalShadow(worldPos, opacity, lightIndex, faceSDFAtten, faceSDFMask);
@@ -157,7 +157,7 @@ float3 AdditionalLightingShadingGradeMap(UtsLight additionalLight, float4 _MainT
     // finalColor = lerp(finalColor, 0, Set_FinalShadowMask);
 
     // Glitter
-    glitterColor += Glitter(finalColor, opacity, viewDirection, normalDir, normalDirection, Set_UV0, Set_FinalBaseColor, additionalLight.shadowAttenuation, lightDirection, lightColor);
+    glitterColor += Glitter(finalColor, opacity, viewDirection, normalDir, normalDirection, Set_UV0, Set_FinalBaseColor, saturate(additionalLight.shadowAttenuation), lightDirection, lightColor);
 
 #if _USE_CHAR_SHADOW    // CUSTOM (Character Shadow)
     half ssShadowAtten = GetCharAdditionalShadow(worldPos, opacity, lightIndex, faceSDFAtten, faceSDFMask);
